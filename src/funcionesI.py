@@ -1,4 +1,5 @@
 import csv
+
 from src.constantes import DATA_PATH
 
 def all_togetherI(path_salida):
@@ -29,3 +30,18 @@ def university(path_entrada, path_salida):
         for row in reader:
             row[new_column] = 2 if int(row["CH06"]) < 18 else (1 if row["NIVEL_ED"] == "6" else 0)
             writer.writerow(row)
+
+
+def trad_niv_ed(line, column):
+    dict_ref = {
+        "1" : "Primario incompleto",
+        "2" : "Primario completo",
+        "3" : "Secundario incompleto",
+        "4" : "Secundario completo",
+        "5" : "Superior o universitario",
+        "6" : "Superior o universitario",
+        "7" : "Sin información",
+        "9" : "Sin información"
+    }
+    return dict_ref[line[column]]
+    

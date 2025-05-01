@@ -16,11 +16,11 @@ def all_togetherH(path_salida):
                         encabezado_escrito = True
                     for row in reader:
                         writer.writerow(row)
-
+                        
 def home_density(path_entrada, path_salida):
     """Agrega la columna DENSIDAD_HOGAR y le calcula su resultado para cada fila."""
     # Abro la salida en "r+" porque el archivo ya estará creado y modificado previamente por mis compañeros
-    with path_entrada.open("r", newline="") as entrada, path_salida.open("r+", newline="") as salida:
+    with path_entrada.open("r", newline="") as entrada, path_salida.open("w", newline="") as salida:
         new_column = "DENSIDAD_HOGAR"
         reader = csv.DictReader(entrada, delimiter=";")
         columns = reader.fieldnames + [new_column]
@@ -30,3 +30,83 @@ def home_density(path_entrada, path_salida):
             density = int(row["IX_TOT"]) / int(row["II1"]) if int(row["II1"]) != 0 else 0
             row[new_column] = "BAJO" if density < 1 else ("ALTO" if density > 2 else "MEDIO")
             writer.writerow(row)
+
+def habitability_condition(header, data, out_data):
+    """calcula un coeficiciente que define una categoría de condición de habitabilidad
+    y agrega dicha categoria en la columna "CONDICION DE HABITABILIDAD" """
+    def verif_data(line):
+        """Verifica las condiciones para calcular el coeficiente"""
+        c = ["IV6", "IV7", "IV8", "IV9", "IV10", "IV11"]
+        r = ["0", "1", "2", "3", "4"]
+        for column in c:
+            if line[header.index(column)] not in r or line[header.index("IV7")] == "4":
+                return False
+        return True
+    def verif_hab_cond(coef):
+        """define la condicion de habitabilidad en base al valor del coeficiente"""
+        if coef <= 0.3:
+            return "INSUFICIENTE"
+        elif coef <= 0.7:
+            return "REGULAR"
+        elif coef <= 0.9:
+            return "SALUDABLE"
+        else:
+            return "BUENA"
+
+    # DICCIONARIOS DE CALIFICACIÓN
+    d_iv6 = {       # ¿Tiene agua?
+        "1" : 1,    # En la vivienda
+        "2" : 0.5,  # Fuera de la vivienda, dentro del terreno
+        "3" : 0,    # Fuera del terreno
+    }
+    d_iv7 = {       # Tipo de agua
+        "1" : 1,    # Red pública (agua corriente)
+        "2" : 0.8,  # Perforación en pozo con bomba
+        "3" : 0.5,  # Perforación con bomba manual
+        "4" : None, # Otra fuente
+    }
+    d_iv8 = {       # ¿Tiene baño/letrina?
+        "1" : 1,    # Si
+        "2" : 0     # No
+    }
+    d_iv9 = {       # El baño/letrina está...
+        "1" : 1,    # Dentro de la vivienda
+        "2" : 0.5,  # Fuera de la vivienda, dentro del terreno
+        "3" : 0,    # Fuera del terreno
+        "0" : 0     # No tiene baño/letrina
+    }               
+    d_iv10 = {      # El baño tiene...
+        "1" : 1,    # Inodoro con botón/mochila/cadena y arrastre de agua
+        "2" : 0.7,  # Inodoro sin botón/cadena y con arrastre de agua (a balde)
+        "3" : 0,    # Letrina (sin arrastre de agua)
+        "0" : 0     # No tiene baño/letrina
+    }
+    d_iv11 = {      # El desagüe del baño es...
+        "1" : 1,    # A red pública (cloaca)
+        "2" : 0.8,  # A cámara séptica y pozo ciego
+        "3" : 0.5,  # Solo a pozo ciego
+        "4" : 0,    # Hoyo/excavación en la tierra
+        "0" : 0,    # No tiene baño/letrina
+    }
+    
+    header.append("CONDICION_DE_HABITABILIDAD")
+    out_data.writerow(header)
+    for line in data:
+        if verif_data(line):
+            c_iv6 = d_iv6[line[header.index("IV6")]]
+            c_iv7 = d_iv7[line[header.index("IV7")]]
+            c_iv8 = d_iv8[line[header.index("IV8")]]
+            c_iv9 = d_iv9[line[header.index("IV9")]]
+            c_iv10 = d_iv10[line[header.index("IV10")]]
+            c_iv11 = d_iv11[line[header.index("IV11")]]
+            coef = c_iv6 * c_iv7 * c_iv8 * c_iv9 * c_iv10 * c_iv11
+            out_data.writerow(line[:] + [verif_hab_cond(coef)])
+        else:
+            out_data.writerow(line[:] + ["SIN DATOS"])
+
+def set_habitability_condition(archivo_completo, archivo_salida):
+    with open(archivo_completo, "r") as data, open(archivo_salida, "w") as data_out:
+        data_reader = csv.reader(data, delimiter=";")
+        header = next(data_reader)
+        data_out_csv = csv.writer(data_out, delimiter=";")
+        habitability_condition(header, data_reader, data_out_csv)
