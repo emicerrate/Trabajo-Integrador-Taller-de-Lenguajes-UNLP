@@ -16,6 +16,31 @@ def all_togetherH(path_salida):
                         encabezado_escrito = True
                     for row in reader:
                         writer.writerow(row)
+
+def home_type(data):
+    """
+    Genera una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
+        - "Unipersonal" (una persona).
+        - "Nuclear" (2 a 4 personas).
+        - "Extendido" (5 o más personas).
+    """
+    with data.open("r", newline="") as file_in:
+        reader = csv.DictReader(file_in, delimiter=";")
+        rows = list(reader)  
+        columns = reader.fieldnames + ["TIPO_HOGAR"]
+        
+    # Escribir los datos con la nueva columna
+    with data.open("w", newline="") as file_out:
+        writer = csv.DictWriter(file_out, fieldnames=columns, delimiter=";")
+        writer.writeheader()
+        for row in rows:
+            amount = int(row["IX_TOT"])
+            row["TIPO_HOGAR"] = (
+                "Unipersonal" if amount == 1 else
+                "Nuclear" if 2 <= amount <= 4 else
+                "Extendido"
+            )
+            writer.writerow(row)
                         
 def home_density(path_entrada, path_salida):
     """Agrega la columna DENSIDAD_HOGAR y le calcula su resultado para cada fila."""
