@@ -32,16 +32,29 @@ def university(path_entrada, path_salida):
             writer.writerow(row)
 
 
-def trad_niv_ed(line, column):
+def education_level_ref(line, column):
+    """Diccionario de referencia para los niveles educativos"""
     dict_ref = {
-        "1" : "Primario incompleto",
-        "2" : "Primario completo",
-        "3" : "Secundario incompleto",
-        "4" : "Secundario completo",
-        "5" : "Superior o universitario",
-        "6" : "Superior o universitario",
-        "7" : "Sin información",
-        "9" : "Sin información"
+        "1" : "PRIMARIO INCOMPLETO",
+        "2" : "PRIMARIO COMPLETO",
+        "3" : "SECUNDARIO INCOMPLETO",
+        "4" : "SECUNDARIO COMPLETO",
+        "5" : "SUPERIOR O UNIVERSITARIO",
+        "6" : "SUPERIOR O UNIVERSITARIO",
+        "7" : "SIN INFORMACIÓN",
+        "9" : "SIN INFORMACIÓN"
     }
     return dict_ref[line[column]]
     
+def education_level(archivo_entrada, archivo_salida):
+    """Agrega la columna 'NIVEL_ED_str' que indica el máximo nivel educativo en cadena de texto."""
+    with open(archivo_entrada, "r") as data_ind, open(archivo_salida, "w") as data_out:
+        data_ind = csv.reader(data_ind, delimiter=";")
+        data_out_csv = csv.writer(data_out, delimiter=";")
+        header = next(data_ind)
+        header.append("NIVEL_ED_str")
+        data_out_csv.writerow(header)
+        column = header.index("NIVEL_ED")
+        for line in data_ind:
+            row = line[:] + [education_level_ref(line, column)]
+            data_out_csv.writerow(row)
