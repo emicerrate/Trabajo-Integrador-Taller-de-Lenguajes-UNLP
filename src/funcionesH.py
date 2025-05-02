@@ -135,3 +135,22 @@ def set_habitability_condition(archivo_completo, archivo_salida):
         header = next(data_reader)
         data_out_csv = csv.writer(data_out, delimiter=";")
         habitability_condition(header, data_reader, data_out_csv)
+
+def material(path_entrada): #Indica el tipo de hogar
+    with open(path_entrada, encoding= "utf-8") as file_h:
+        reader_h = list(csv.reader(file_h, delimiter=";"))
+        header_h = reader_h[0]
+        writer_h = csv.writer(file_h, delimiter=";")
+
+        header_h.append("MATERIAL_TECHUMBRE")
+        writer_h.writerow(header_h)
+        for row in file_h:
+            if int(row[47]) in (1,2,3,4): # fila 47: V4
+                row.append("Material durable")
+            elif int(row[47]) in (5,6,7):
+                row.append("Material precario")
+            elif int(row[47]) == 9:
+                row.append("No aplica")
+            else:
+                row.append("No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase.")
+            writer_h.writerow(row)

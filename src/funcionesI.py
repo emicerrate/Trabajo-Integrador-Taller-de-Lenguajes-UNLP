@@ -77,4 +77,28 @@ def gender(archivo_entrada, archivo_salida):
                 gender = "Femenino"
             row = line[:] + [gender]
             data_out_csv.writerow(row)
-          
+
+def condition(archivo_entrada, archivo_salida):
+    with open(archivo_entrada, encoding= "utf-8") as data_in, open(archivo_salida, "w", newline="") as data_out:
+        reader_i = list(csv.reader(data_in, delimiter="\t"))
+        writer_i = csv.writer(data_out, delimiter=";")
+        header_i = reader_i[0]
+        rows_i = reader_i[1:]
+
+        header_i.append("CONDICION_LABORAL")
+        writer_i.writer(header_i)
+        for row in rows_i:
+            if (int(row[27]) == 1) and (int(row[28]) in (1,2)): # fila 27: estado, fila 28: cat_ocup
+                row.append("Ocupado autónomo")
+            elif (int(row[27]) == 1) and (int(row[28]) in (3,4,9)):
+                row.append("Ocupado dependiente")
+            elif int(row[27]) == 2:
+                row.append("Desocupado")
+            elif int(row[27]) == 3:
+                row.append("Inactivo")
+            elif int(row[27]) == 4:
+                row.append("Fuera de categoría/sin información")
+            else:
+                row.append("No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase.")
+            
+            writer_i.writerow(row)
