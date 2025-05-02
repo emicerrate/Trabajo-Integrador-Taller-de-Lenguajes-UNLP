@@ -58,3 +58,23 @@ def education_level(archivo_entrada, archivo_salida):
         for line in data_ind:
             row = line[:] + [education_level_ref(line, column)]
             data_out_csv.writerow(row)
+
+def gender(archivo_entrada, archivo_salida):
+    'Agrega la columna CH04_str que indica el género según los valores de CH04.'
+    with open(archivo_entrada, "r") as data_ind, open(archivo_salida, "w", newline="") as data_out:
+        data_ind = csv.reader(data_ind, delimiter=";")
+        data_out_csv = csv.writer(data_out, delimiter=";")
+        header = next(data_ind)
+        header.append("CH04_str")  
+        data_out_csv.writerow(header)
+        CHO4_INDEX = header.index("CH04")
+        
+        for line in data_ind:
+            CH04_value = line[CHO4_INDEX]  
+            if CH04_value == "1":
+                gender = "Masculino"
+            else:
+                gender = "Femenino"
+            row = line[:] + [gender]
+            data_out_csv.writerow(row)
+          
