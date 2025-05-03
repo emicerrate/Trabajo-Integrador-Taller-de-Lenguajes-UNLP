@@ -9,11 +9,14 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+data_out/usu_*
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
+files/EPH_usu_*
+files/usu_*
 lib/
 lib64/
 parts/
