@@ -112,3 +112,46 @@ def retired_insufficient(path_individual, path_home):
         for conglomerate in sorted(retired_counter, key=int):
             percentage = (100 * retired_counter_insufficient.get(conglomerate, 0)) / retired_counter[conglomerate]
             print(f"Aglomerado {conglomerate}: {percentage:.2f}%")
+
+def filter_by_year_and_trimester(data, year='', tri=''):
+    """Filtra un dataset por año y trimestre ingresados por parámetro o por teclado"""
+    #Verifica que el año ingresado sea válido (se supone datasets entre 2016 y 2024)
+    while type(year) != int or (year < 2016 or year > 2024):
+        try:
+            year = int(input("Ingrese año: "))
+        except:
+            print("Ingrese un año válido")
+        else:
+            if (year < 2016 or year > 2024):
+                print("Ingrese un año entre 2016 y 2024")
+    #Verifica que el trimestre sea válido (1 a 4)
+    while type(tri) != int or (tri < 1 or tri > 4):
+        try:
+            tri = int(input("Ingrese trimestre: "))
+        except:
+            print("Ingrese un número del 1 al 4")
+        else:
+            if (tri < 1 or tri > 4):
+                print("Ingrese un número del 1 al 4")
+    reader = csv.DictReader(data, delimiter=";")
+    #Devuelve un iterable tipo 'filter' con los datos del año y trimestre seleccionado
+    data_out = filter(lambda line: line["ANO4"] == str(year) and line["TRIMESTRE"] == str(tri), reader)
+    return data_out, year, tri
+def foreign_university_student_percent(data):
+    """Calcula el porcentaje de extranjeros que cursaron un nivel universitario o superior
+    en un determinado trimestre, elegido por el usuario"""
+    with open(data) as database:
+        filtered_data, year, tri = filter_by_year_and_trimester(database)
+        foreign_count = 0
+        foreign_uni_stu_count = 0
+        for line in filtered_data:
+            if line["CH15"] in ("4", "5"):
+                foreign_count += int(line["PONDERA"])
+                if line["NIVEL_ED_str"] == "SUPERIOR O UNIVERSITARIO":
+                    foreign_uni_stu_count += int(line["PONDERA"])
+    if foreign_count == 0:
+        print("No hay información sobre el trimestre seleccionado")
+        return None
+    perc = foreign_uni_stu_count * 100 / foreign_count
+    print(f"""AÑO: {year} TRIMESTRE: {tri}\nPorcentaje de personas no nacidas en Argentina que cursaron un nivel universitario o superior: {perc:.3f}%""")
+    return perc
