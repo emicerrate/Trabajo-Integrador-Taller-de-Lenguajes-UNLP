@@ -20,8 +20,7 @@ def all_togetherI(path_salida):
 
 def university(path_entrada, path_salida):
     """Agrega la columna UNIVERSITARIO y le calcula su resultado para cada fila."""
-    # Abro la salida en "r+" porque el archivo ya estará creado y modificado previamente por mis compañeros
-    with path_entrada.open("r", newline="") as entrada, path_salida.open("r+", newline="") as salida:
+    with path_entrada.open("r", newline="") as entrada, path_salida.open("w+", newline="") as salida:
         new_column = "UNIVERSITARIO"
         reader = csv.DictReader(entrada, delimiter=";")
         columns = reader.fieldnames + [new_column]
@@ -79,14 +78,14 @@ def gender(archivo_entrada, archivo_salida):
             data_out_csv.writerow(row)
 
 def condition(archivo_entrada, archivo_salida):
-    with open(archivo_entrada, encoding= "utf-8") as data_in, open(archivo_salida, "w", newline="") as data_out:
-        reader_i = list(csv.reader(data_in, delimiter="\t"))
+    with open(archivo_entrada, newline="") as data_in, open(archivo_salida, "w", newline="") as data_out:
+        reader_i = list(csv.reader(data_in, delimiter=";"))
         writer_i = csv.writer(data_out, delimiter=";")
         header_i = reader_i[0]
         rows_i = reader_i[1:]
 
         header_i.append("CONDICION_LABORAL")
-        writer_i.writer(header_i)
+        writer_i.writerow(header_i)
         for row in rows_i:
             if (int(row[27]) == 1) and (int(row[28]) in (1,2)): # fila 27: estado, fila 28: cat_ocup
                 row.append("Ocupado autónomo")

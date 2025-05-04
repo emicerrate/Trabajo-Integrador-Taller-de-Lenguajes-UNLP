@@ -44,7 +44,6 @@ def home_type(data):
                         
 def home_density(path_entrada, path_salida):
     """Agrega la columna DENSIDAD_HOGAR y le calcula su resultado para cada fila."""
-    # Abro la salida en "r+" porque el archivo ya estará creado y modificado previamente por mis compañeros
     with path_entrada.open("r", newline="") as entrada, path_salida.open("w", newline="") as salida:
         new_column = "DENSIDAD_HOGAR"
         reader = csv.DictReader(entrada, delimiter=";")
@@ -52,8 +51,12 @@ def home_density(path_entrada, path_salida):
         writer = csv.DictWriter(salida, fieldnames=columns, delimiter=";")
         writer.writeheader()
         for row in reader:
-            density = int(row["IX_TOT"]) / int(row["II1"]) if int(row["II1"]) != 0 else 0
-            row[new_column] = "BAJO" if density < 1 else ("ALTO" if density > 2 else "MEDIO")
+            try:
+                density = int(row["IX_TOT"]) / int(row["II1"]) if int(row["II1"]) != 0 else 0
+            except ValueError:
+                row[new_column] = "FALTA INFORMACIÓN"
+            else:
+                row[new_column] = "BAJO" if density < 1 else ("ALTO" if density > 2 else "MEDIO")
             writer.writerow(row)
 
 def habitability_condition(header, data, out_data):
@@ -130,14 +133,14 @@ def habitability_condition(header, data, out_data):
             out_data.writerow(line[:] + ["SIN DATOS"])
 
 def set_habitability_condition(archivo_completo, archivo_salida):
-    with open(archivo_completo, "r") as data, open(archivo_salida, "w") as data_out:
+    with open(archivo_completo, "r", newline="") as data, open(archivo_salida, "w", newline="") as data_out:
         data_reader = csv.reader(data, delimiter=";")
         header = next(data_reader)
         data_out_csv = csv.writer(data_out, delimiter=";")
         habitability_condition(header, data_reader, data_out_csv)
 
 def material(path_entrada): #Indica el tipo de hogar
-    with open(path_entrada, encoding= "utf-8") as file_h:
+    with open(path_entrada, encoding= "utf-8", newline="") as file_h:
         reader_h = list(csv.reader(file_h, delimiter=";"))
         header_h = reader_h[0]
         writer_h = csv.writer(file_h, delimiter=";")
