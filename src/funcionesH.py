@@ -83,7 +83,7 @@ def habitability_condition(header, data, out_data):
         c = ["IV6", "IV7", "IV8", "IV9", "IV10", "IV11"]
         r = ["0", "1", "2", "3", "4"]
         for column in c:
-            if line[header.index(column)] not in r or line[header.index("IV7")] == "4":
+            if (line[header.index(column)] not in r or line[header.index("IV7")] == "4"):
                 return False
         return True
     def verif_hab_cond(coef):
@@ -102,16 +102,19 @@ def habitability_condition(header, data, out_data):
         "1" : 1,    # En la vivienda
         "2" : 0.5,  # Fuera de la vivienda, dentro del terreno
         "3" : 0,    # Fuera del terreno
+        "0" : 0     # No tiene agua
     }
     d_iv7 = {       # Tipo de agua
         "1" : 1,    # Red pública (agua corriente)
         "2" : 0.8,  # Perforación en pozo con bomba
         "3" : 0.5,  # Perforación con bomba manual
         "4" : None, # Otra fuente
+        "0" : None  # No hay información
     }
     d_iv8 = {       # ¿Tiene baño/letrina?
         "1" : 1,    # Si
-        "2" : 0     # No
+        "2" : 0,    # No
+        "0" : None  # No hay información
     }
     d_iv9 = {       # El baño/letrina está...
         "1" : 1,    # Dentro de la vivienda
@@ -143,7 +146,11 @@ def habitability_condition(header, data, out_data):
             c_iv9 = d_iv9[line[header.index("IV9")]]
             c_iv10 = d_iv10[line[header.index("IV10")]]
             c_iv11 = d_iv11[line[header.index("IV11")]]
-            coef = c_iv6 * c_iv7 * c_iv8 * c_iv9 * c_iv10 * c_iv11
+            # Hace una salvedad de los datos que serian descartados, pero que por lógica daría "INSUFICIENTE"
+            if 0 in (c_iv6, c_iv7, c_iv8, c_iv9, c_iv10, c_iv11):
+                coef = 0
+            else:
+                coef = c_iv6 * c_iv7 * c_iv8 * c_iv9 * c_iv10 * c_iv11
             out_data.writerow(line[:] + [verif_hab_cond(coef)])
         else:
             out_data.writerow(line[:] + ["SIN DATOS"])
