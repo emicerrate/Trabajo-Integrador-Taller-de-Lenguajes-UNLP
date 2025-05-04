@@ -2,7 +2,14 @@ import csv
 from src.constantes import DATA_PATH
 
 def all_togetherH(path_salida):
-    """Junta todos los datos de los archivos hogar a un único archivo."""
+    """
+    Junta todos los datos de los archivos hogar a un único archivo.
+    Args:
+        path_salida (Path): Ruta al archivo de salida donde se juntara toda la información.
+    Returns:
+        None
+    """
+    
     encabezado_escrito = False
     with path_salida.open("w", newline="") as salida:
         writer = csv.writer(salida, delimiter=";")
@@ -43,7 +50,16 @@ def home_type(data):
             writer.writerow(row)
                         
 def home_density(path_entrada, path_salida):
-    """Agrega la columna DENSIDAD_HOGAR y le calcula su resultado para cada fila."""
+    """
+    Agrega la columna DENSIDAD_HOGAR y le calcula su resultado para cada fila.
+    Args:
+        path_entrada (Path): Ruta al archivo de hogares del cual se leera.
+        path_salida (Path): Ruta al directorio donde se guardara el archivo procesado.
+    Returns:
+        None
+    """
+    
+    # Abro el archivo correspondiente de lectura y escritura
     with path_entrada.open("r", newline="") as entrada, path_salida.open("w", newline="") as salida:
         new_column = "DENSIDAD_HOGAR"
         reader = csv.DictReader(entrada, delimiter=";")
