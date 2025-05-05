@@ -155,3 +155,49 @@ def foreign_university_student_percent(data):
     perc = foreign_uni_stu_count * 100 / foreign_count
     print(f"""AÑO: {year} TRIMESTRE: {tri}\nPorcentaje de personas no nacidas en Argentina que cursaron un nivel universitario o superior: {perc:.3f}%""")
     return perc
+
+def adults_per_education_level(path_individual):
+    #Pido el aglomerado al usuario
+    conglomerates = input("Ingrese el numero de aglomerado: ")
+    #Creo una lista con los niveles de educacion
+    education_levels = [
+        "PRIMARIO INCOMPLETO",
+        "PRIMARIO COMPLETO",
+        "SECUNDARIO INCOMPLETO",
+        "SECUNDARIO COMPLETO",
+        "SUPERIOR O UNIVERSITARIO"
+    ]
+
+    #Agrupo por (año, trimestre) en un diccionario
+    year_quarter_dicc = {}
+
+    with open(path_individual, newline='') as file:
+        reader = csv.DictReader(file, delimiter=';')
+
+        for row in reader:
+            #Verifico si el aglomerado es el que me pidieron 
+            if row["AGLOMERADO"] == conglomerates:
+                age = int(row["CH06"])
+                #Filtro por edad y por nivel de educacion                
+                if age >= 18:
+                    education_level = row["NIVEL_ED_str"]
+                    if education_level in education_levels:
+                        year = row["ANO4"]                      
+                        quarter = row["TRIMESTRE"]
+                        key = (year, quarter) #Formo la clave (año, trimestre)
+                        if key not in year_quarter_dicc: 
+                            year_quarter_dicc[key] = Counter() #Si es la primera vez que se encuentra creo el contador
+                            
+                        year_quarter_dicc[key][education_level] += int(row["PONDERA"]) #sumo la ponderacion al contador correspondiente
+
+    #Imprimo encabezado
+    print(f"\nNombre de Aglomerado: {conglomerates}")
+    print(f"{'Año':<6} {'Trimestre':<10} " + "  ".join(f"{education_level:<25}" for education_level in education_levels))
+    print("-" * (6 + 10 + 27 * len(education_levels)))
+
+    #Imprimo datos ordenados por año y trimestre
+    for (year, quarter) in sorted(year_quarter_dicc):
+        print(f"{year:<6} {quarter:<10} ", end='')
+        for education_level in education_levels:
+            print(f"{year_quarter_dicc[(year, quarter)].get(education_level, 0):<25}", end='  ')
+        print()   
