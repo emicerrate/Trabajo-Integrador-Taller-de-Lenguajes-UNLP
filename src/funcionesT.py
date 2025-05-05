@@ -353,4 +353,37 @@ def owners_occupation_per_ag(dataH):
     for agglo in dict_ag_list_ow_oc:
         print("{:<36} {:<8}".format(f"{ag_id[agglo]}:", f"{(dict_ag_list_ow_oc[agglo][0] * 100 / dict_ag_list_ow_oc[agglo][1]):.3f} %"))
         
+def university_insufficient(path_individual, path_home):
+    # Pido año al usuario y lo valido
+    while True:
+        try:
+            year = int(input("Ingrese un año (entre 2016 y 2024): "))
+            if 2016 <= year <= 2024:
+                break
+            else:
+                print("Por favor, ingrese un año entre 2016 y 2024.")
+        except:
+            print("Entrada invalida. Ingrese un numero entero.")
+
+    with path_individual.open("r", newline="") as individual, path_home.open("r", newline="") as home:
+        # Inicializo contador 
+        university_counter_insufficient = 0 
         
+        # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez 
+        individual_reader = list(csv.DictReader(individual, delimiter=";")) 
+        home_reader = list(csv.DictReader(home, delimiter=";"))
+        
+        # Calculo el ultimo trimestre y me guardo su numero
+        max_quarter = max(int(row["TRIMESTRE"]) for row in individual_reader if int(row["ANO4"]) == year)
+
+        # Guardo las casas que corresponden al ultimo trimestre en un diccionario
+        houses = {house["CODUSU"]: house for house in home_reader if int(house["ANO4"]) == year and int(house["TRIMESTRE"]) == max_quarter}
+        
+        # Sumo al contador la cantidad de personas correspondientes
+        for person in individual_reader:
+            if person["ANO4"] == str(year) and person["TRIMESTRE"] == str(max_quarter) and person["NIVEL_ED_str"] == "SUPERIOR O UNIVERSITARIO" and houses[person["CODUSU"]]["CONDICION_DE_HABITABILIDAD"] == "INSUFICIENTE":
+                university_counter_insufficient += (int(person["PONDERA"]))
+        
+        # Imprimo la cantidad 
+        print(f"\nCANTIDAD DE PERSONAS CON NIVEL DE EDUCACION UNIVERSITARIO O SUPERIOR VIVIENDO EN CONDICION DE HABITABILIDAD INSUFICIENTE EN EL AÑO {year}, TRIMESTRE {max_quarter}: {university_counter_insufficient}")
+             
