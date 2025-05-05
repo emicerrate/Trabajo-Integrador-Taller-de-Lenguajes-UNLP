@@ -1,6 +1,43 @@
 import csv
 from collections import Counter
 
+def agglomeration_id():
+    dict_ag_id = {
+    "2" : "Gran La Plata",
+    "3" : "Bahía Blanca - Cerri",
+    "4" : "Gran Rosario",
+    "5" : "Gran Santa Fé",
+    "6" : "Gran Paraná",
+    "7" : "Posadas",
+    "8" : "Gran Resistencia",
+    "9" : "Comodoro Rivadavia - Rada Tilly",
+    "10" : "Gran Mendoza",
+    "12" : "Corrientes",
+    "13" : "Gran Córdoba",
+    "14" : "Concordia",
+    "15" : "Formosa",
+    "17" : "Neuquén – Plottier",
+    "18" : "Santiago del Estero - La Banda",
+    "19" : "Jujuy - Palpalá",
+    "20" : "Río Gallegos",
+    "22" : "Gran Catamarca",
+    "23" : "Gran Salta",
+    "25" : "La Rioja",
+    "26" : "Gran San Luis",
+    "27" : "Gran San Juan",
+    "29" : "Gran Tucumán - Tafí Viejo",
+    "30" : "Santa Rosa – Toay",
+    "31" : "Ushuaia - Río Grande",
+    "32" : "Ciudad Autónoma de Buenos Aires",
+    "33" : "Partidos del GBA",
+    "34" : "Mar del Plata",
+    "36" : "Río Cuarto",
+    "38" : "San Nicolás – Villa Constitución",
+    "91" : "Rawson – Trelew",
+    "93" : "Viedma – Carmen de Patagones"
+    }
+    return dict_ag_id
+
 def last_quarter(file_path):
     """
     Calcula el trimestre procesado en un archivo.
@@ -270,3 +307,43 @@ def percentage_university_level_clusters(path_individual):
                 print(f"Aglomerado {int(cluster):>2}: {round(percentage, 2)}%") 
         
         print("----------------------------------")
+
+def owners_occupation_per_ag(dataH):
+    """Devuelve el porcentaje de viviendas ocupadas por sus propietarios, por aglomerado"""
+    def occupant_clasificator(value):
+        """Devuelve 'None' si desestima los datos, 'True' si es vivienda
+        ocupada por propietarios y 'False' en caso contrario."""
+        # II7 -> "8" (en suceción) lo considero como un 'gris' y prefiero desestimarlo
+        # II7 -> "9" (Otra situacón) también es desestimada
+        if value not in ("1", "2", "3", "4", "5", "6", "7"):
+            return None
+        elif value in ("1", "2"):
+            return True
+        else:
+            return False
+    ag_id = agglomeration_id().copy()
+    
+    dict_ag_list_ow_oc = {}
+    #Defino un diccionario "aglomerado" : [ocupantes propietarios, total]
+    for agglomeration in ag_id:
+        dict_ag_list_ow_oc.update({agglomeration : [0, 0]})
+    
+    with dataH.open() as file:
+        dict_reader = csv.DictReader(file, delimiter=";")
+        for row in dict_reader:
+            # Desestima datos que no definan la condición de ocupación
+            if occupant_clasificator(row["II7"]) == None:
+                continue
+            else:
+                # Actualiza la cuenta de hogares
+                dict_ag_list_ow_oc[row["AGLOMERADO"]][1] += int(row["PONDERA"])
+                # Actualiza la cuenta de hogares con ocupantes propietarios
+                if occupant_clasificator(row["II7"]):
+                    dict_ag_list_ow_oc[row["AGLOMERADO"]][0] += int(row["PONDERA"])
+                    
+    print("PORCENTAJE DE VIVIENDAS OCUPADAS POR SUS PROPIETARIOS:")
+    
+    for agglo in dict_ag_list_ow_oc:
+        print("{:<36} {:<8}".format(f"{ag_id[agglo]}:", f"{(dict_ag_list_ow_oc[agglo][0] * 100 / dict_ag_list_ow_oc[agglo][1]):.3f} %"))
+        
+        
