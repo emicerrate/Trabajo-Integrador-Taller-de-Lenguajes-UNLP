@@ -66,8 +66,11 @@ def compare_unfinished_high_school(path_individual):
     with path_individual.open("r", newline="") as file:
         reader = csv.DictReader(file, delimiter=";")
         conglomerates = {row["AGLOMERADO"] for row in reader}
-
+    ag_id = agglomeration_id()
     # Le pido al usuario los aglomerados a comparar
+    for item in ag_id:
+            print(f"{item}: {ag_id[item]}")
+    
     while True:
         conglomerateA = input("Aglomerado A: ")
         if conglomerateA not in conglomerates:
@@ -104,7 +107,7 @@ def compare_unfinished_high_school(path_individual):
         sorted_periods = sorted(all_periods, key=lambda x: (int(x[0]), int(x[1])))
 
         # Imprimo para cada año y trimestre la comparación de porcentajes entre ambos aglomerados
-        print(f"{'Año':<6} {'Trimestre':<11} {'Aglomerado ' + conglomerateA:<20} {'Aglomerado ' + conglomerateB:<20}")
+        print(f"{'Año':<6} {'Trimestre':<11} {ag_id[conglomerateA]:<20} {ag_id[conglomerateB]:<20}")
         for year, quarter in sorted_periods:
             percentageA = 100 * unfinished_adults.get((conglomerateA, year, quarter), 0) / adults[(conglomerateA, year, quarter)]
             percentageB = 100 * unfinished_adults.get((conglomerateB, year, quarter), 0) / adults[(conglomerateB, year, quarter)]
@@ -119,6 +122,7 @@ def retired_insufficient(path_individual, path_home):
     Returns:
         None
     """
+    ag_id = agglomeration_id()
 
     # Calculo el ultimo trimestre y me guardo su número y el año correspondiente
     max_year, max_quarter = last_quarter(path_home)
@@ -148,7 +152,7 @@ def retired_insufficient(path_individual, path_home):
         print("\nPORCENTAJE DE JUBILADOS VIVIENDO EN CONDICIÓN DE HABITABILIDAD INSUFICIENTE POR AGLOMERADO:")
         for conglomerate in sorted(retired_counter, key=int):
             percentage = (100 * retired_counter_insufficient.get(conglomerate, 0)) / retired_counter[conglomerate]
-            print(f"Aglomerado {conglomerate}: {percentage:.2f}%")
+            print("{:<36} {:<8}".format(f"{ag_id[conglomerate]}:", f"{percentage:.2f}%"))
 
 def filter_by_year_and_trimester(data, year='', tri=''):
     """Filtra un dataset por año y trimestre ingresados por parámetro o por teclado"""
@@ -191,18 +195,19 @@ def foreign_university_student_percent(data):
         return None
     perc = foreign_uni_stu_count * 100 / foreign_count
     print(f"""AÑO: {year} TRIMESTRE: {tri}\nPorcentaje de personas no nacidas en Argentina que cursaron un nivel universitario o superior: {perc:.3f}%""")
-    return perc
 
 def adults_per_education_level(path_individual):
     
     with path_individual.open("r", newline="") as file:
         reader = list(csv.DictReader(file, delimiter=";"))  # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez
         conglomerates = {row["AGLOMERADO"] for row in reader}
-    
+    ag_id = agglomeration_id()
     while True:
-        conglomerate = input("Ingrese el Aglomerado: ")
+        for item in ag_id:
+            print(f"{item}: {ag_id[item]}")
+        conglomerate = input("Ingrese el número de aglomerado: ")
         if conglomerate not in conglomerates:
-            print("ERROR: El aglomerado que introdujo no es valido, por favor, intente de nuevo.")
+            print("ERROR: El aglomerado que introdujo no es válido, por favor, intente de nuevo.")
             continue
         break
     
@@ -235,7 +240,7 @@ def adults_per_education_level(path_individual):
                     year_quarter_dicc[key][education_level] += int(row["PONDERA"]) #sumo la ponderacion al contador correspondiente
 
     #Imprimo encabezado
-    print(f"\nAglomerado: {conglomerate}")
+    print(f"\n{ag_id[conglomerate]}")
     print(f"{'Año':<6} {'Trimestre':<10} " + "  ".join(f"{education_level:<25}" for education_level in education_levels))
     print("-" * (6 + 10 + 27 * len(education_levels)))
 
@@ -258,7 +263,7 @@ def max_homes_cluster(path_home):
     with path_home.open("r", newline="") as file:
         dict_reader = csv.DictReader(file, delimiter=";")
         dict_agglomerate = {}
-        
+        ag_id = agglomeration_id()
         # Se realiza una lista filtrada con el ultimo trimestre
         quarter_filtered =  [
             row for row in dict_reader 
@@ -268,7 +273,7 @@ def max_homes_cluster(path_home):
         # Se Itera cada fila del reader y si no tiene baño y tiene mas de 2 habitantes se guarda en un diccionario el aglomerado y el ponderador com ovalor
         for row in quarter_filtered:
             if int(row["IV8"]) == 2 and int(row["IX_TOT"]) > 2:
-                agglomerate = row["AGLOMERADO"]
+                agglomerate = ag_id[row["AGLOMERADO"]]
                 weighter = int(row["PONDERA"])  
                 if agglomerate not in dict_agglomerate:
                     dict_agglomerate[agglomerate] = 0
@@ -290,6 +295,7 @@ def percentage_university_level_clusters(path_individual):
         Informar para cada aglomerado el porcentaje de personas que hayan cursado al
         menos en nivel universitario o superior. UNIVERSITARIO
     """
+    ag_id = agglomeration_id()
     max_year, max_quarter = last_quarter(path_individual)
     with path_individual.open("r", newline="") as file:
         dict_reader = csv.DictReader(file, delimiter=";")
@@ -308,7 +314,7 @@ def percentage_university_level_clusters(path_individual):
             
             # Filtro los casos que no aplican si UNIVERSITARIO = 2
             if education_level in [0, 1]:
-                cluster = row["AGLOMERADO"]
+                cluster = ag_id[row["AGLOMERADO"]]
                 weight = int(row["PONDERA"])
                 
                 # Se inicializa contadores si el cluster no existe
@@ -325,10 +331,10 @@ def percentage_university_level_clusters(path_individual):
         # Se imprimen los aglomerados con su porcentaje de  universitarios
         print("\nPorcentaje universitario por cluster:")
         print("----------------------------------")
-        for cluster in sorted(total_counts.keys(), key=int):
+        for cluster in sorted(total_counts.keys(), key=str):
             if total_counts[cluster] > 0:
                 percentage = (university_counts[cluster] / total_counts[cluster]) * 100
-                print(f"Aglomerado {int(cluster):>2}: {round(percentage, 2)}%") 
+                print("{:<36} {:<8}".format(f"{cluster}:", f"{round(percentage, 2)} %"))
         
         print("----------------------------------")
         
