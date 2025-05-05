@@ -254,12 +254,19 @@ def max_homes_cluster(path_home):
         IX_TOT para cantidad de personas en el hogar,
         PONDERADOR_HOGAR para ponderar cada fila.
     """
+    max_year, max_quarter = last_quarter(path_home)
     with path_home.open("r", newline="") as file:
         dict_reader = csv.DictReader(file, delimiter=";")
         dict_agglomerate = {}
+        
+        # Se realiza una lista filtrada con el ultimo trimestre
+        quarter_filtered =  [
+            row for row in dict_reader 
+            if int(row["ANO4"]) == max_year and int(row["TRIMESTRE"]) == max_quarter
+        ]
 
         # Se Itera cada fila del reader y si no tiene baño y tiene mas de 2 habitantes se guarda en un diccionario el aglomerado y el ponderador com ovalor
-        for row in dict_reader:
+        for row in quarter_filtered:
             if int(row["IV8"]) == 2 and int(row["IX_TOT"]) > 2:
                 agglomerate = row["AGLOMERADO"]
                 weighter = int(row["PONDERA"])  
@@ -268,25 +275,35 @@ def max_homes_cluster(path_home):
                 dict_agglomerate[agglomerate] += weighter
 
         # Se calcula el maximo si no esta vacio el dicionario
+        print("----------------------------------")
+        print("\nAglomerado con mayor cantidad de viviendas con más de dos ocupantes y sin baño:")
+        print("----------------------------------")
         if dict_agglomerate:
             max_agglomerate = max(dict_agglomerate.items(), key=lambda x: x[1])
-            print(f"Aglomerado con más viviendas sin baño y más de dos ocupantes: {max_agglomerate[0]}, cantidad hogares: {max_agglomerate[1]}")
+            print(f"Aglomerado: {max_agglomerate[0]}, cantidad hogares: {max_agglomerate[1]}")
         else:
             print("No se encontraron viviendas que cumplan la condición.")
+        print("----------------------------------")
 
 def percentage_university_level_clusters(path_individual):
     """
         Informar para cada aglomerado el porcentaje de personas que hayan cursado al
         menos en nivel universitario o superior. UNIVERSITARIO
     """
+    max_year, max_quarter = last_quarter(path_individual)
     with path_individual.open("r", newline="") as file:
         dict_reader = csv.DictReader(file, delimiter=";")
-        
+
+        # Se realiza una lista filtrada con el ultimo trimestre
+        quarter_filtered =  [
+            row for row in dict_reader 
+            if int(row["ANO4"]) == max_year and int(row["TRIMESTRE"]) == max_quarter
+        ]
 
         university_counts = {}
         total_counts = {}
         
-        for row in dict_reader:
+        for row in quarter_filtered:
             education_level = int(row["UNIVERSITARIO"])
             
             # Filtro los casos que no aplican si UNIVERSITARIO = 2
@@ -314,7 +331,7 @@ def percentage_university_level_clusters(path_individual):
                 print(f"Aglomerado {int(cluster):>2}: {round(percentage, 2)}%") 
         
         print("----------------------------------")
-
+        
 def owners_occupation_per_ag(dataH):
     """Devuelve el porcentaje de viviendas ocupadas por sus propietarios, por aglomerado"""
     def occupant_clasificator(value):
