@@ -201,3 +201,72 @@ def adults_per_education_level(path_individual):
         for education_level in education_levels:
             print(f"{year_quarter_dicc[(year, quarter)].get(education_level, 0):<25}", end='  ')
         print()   
+
+def max_homes_cluster(path_home):
+    """
+        Informar el aglomerado con mayor cantidad de viviendas con más de dos ocupantes
+        y sin baño. Informar también la cantidad de ellas (ponderadas).
+        Se utiliza IV8 para saber si tiene baño o no,  
+        IX_TOT para cantidad de personas en el hogar,
+        PONDERADOR_HOGAR para ponderar cada fila.
+    """
+    with path_home.open("r", newline="") as file:
+        dict_reader = csv.DictReader(file, delimiter=";")
+        dict_agglomerate = {}
+
+        # Se Itera cada fila del reader y si no tiene baño y tiene mas de 2 habitantes se guarda en un diccionario el aglomerado y el ponderador com ovalor
+        for row in dict_reader:
+            if int(row["IV8"]) == 2 and int(row["IX_TOT"]) > 2:
+                agglomerate = row["AGLOMERADO"]
+                weighter = int(row["PONDERA"])  
+                if agglomerate not in dict_agglomerate:
+                    dict_agglomerate[agglomerate] = 0
+                dict_agglomerate[agglomerate] += weighter
+
+        # Se calcula el maximo si no esta vacio el dicionario
+        if dict_agglomerate:
+            max_agglomerate = max(dict_agglomerate.items(), key=lambda x: x[1])
+            print(f"Aglomerado con más viviendas sin baño y más de dos ocupantes: {max_agglomerate[0]}, cantidad hogares: {max_agglomerate[1]}")
+        else:
+            print("No se encontraron viviendas que cumplan la condición.")
+
+def percentage_university_level_clusters(path_individual):
+    """
+        Informar para cada aglomerado el porcentaje de personas que hayan cursado al
+        menos en nivel universitario o superior. UNIVERSITARIO
+    """
+    with path_individual.open("r", newline="") as file:
+        dict_reader = csv.DictReader(file, delimiter=";")
+        
+
+        university_counts = {}
+        total_counts = {}
+        
+        for row in dict_reader:
+            education_level = int(row["UNIVERSITARIO"])
+            
+            # Filtro los casos que no aplican si UNIVERSITARIO = 2
+            if education_level in [0, 1]:
+                cluster = row["AGLOMERADO"]
+                weight = int(row["PONDERA"])
+                
+                # Se inicializa contadores si el cluster no existe
+                if cluster not in total_counts:
+                    total_counts[cluster] = 0
+                    university_counts[cluster] = 0
+                
+                total_counts[cluster] += weight
+                
+                # Se suman cuando es universitario
+                if education_level == 1:
+                    university_counts[cluster] += weight
+        
+        # Se imprimen los aglomerados con su porcentaje de  universitarios
+        print("\nPorcentaje universitario por cluster:")
+        print("----------------------------------")
+        for cluster in sorted(total_counts.keys(), key=int):
+            if total_counts[cluster] > 0:
+                percentage = (university_counts[cluster] / total_counts[cluster]) * 100
+                print(f"Aglomerado {int(cluster):>2}: {round(percentage, 2)}%") 
+        
+        print("----------------------------------")
