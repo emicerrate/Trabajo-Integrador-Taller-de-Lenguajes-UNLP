@@ -194,8 +194,18 @@ def foreign_university_student_percent(data):
     return perc
 
 def adults_per_education_level(path_individual):
-    #Pido el aglomerado al usuario
-    conglomerates = input("Ingrese el numero de aglomerado: ")
+    
+    with path_individual.open("r", newline="") as file:
+        reader = list(csv.DictReader(file, delimiter=";"))  # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez
+        conglomerates = {row["AGLOMERADO"] for row in reader}
+    
+    while True:
+        conglomerate = input("Ingrese el Aglomerado: ")
+        if conglomerate not in conglomerates:
+            print("ERROR: El aglomerado que introdujo no es valido, por favor, intente de nuevo.")
+            continue
+        break
+    
     #Creo una lista con los niveles de educacion
     education_levels = [
         "PRIMARIO INCOMPLETO",
@@ -208,27 +218,24 @@ def adults_per_education_level(path_individual):
     #Agrupo por (año, trimestre) en un diccionario
     year_quarter_dicc = {}
 
-    with open(path_individual, newline='') as file:
-        reader = csv.DictReader(file, delimiter=';')
-
-        for row in reader:
-            #Verifico si el aglomerado es el que me pidieron 
-            if row["AGLOMERADO"] == conglomerates:
-                age = int(row["CH06"])
-                #Filtro por edad y por nivel de educacion                
-                if age >= 18:
-                    education_level = row["NIVEL_ED_str"]
-                    if education_level in education_levels:
-                        year = row["ANO4"]                      
-                        quarter = row["TRIMESTRE"]
-                        key = (year, quarter) #Formo la clave (año, trimestre)
-                        if key not in year_quarter_dicc: 
-                            year_quarter_dicc[key] = Counter() #Si es la primera vez que se encuentra creo el contador
+    for row in reader:
+        #Verifico si el aglomerado es el que me pidieron 
+        if row["AGLOMERADO"] == conglomerate:
+            age = int(row["CH06"])
+            #Filtro por edad y por nivel de educacion                
+            if age >= 18:
+                education_level = row["NIVEL_ED_str"]
+                if education_level in education_levels:
+                    year = row["ANO4"]                      
+                    quarter = row["TRIMESTRE"]
+                    key = (year, quarter) #Formo la clave (año, trimestre)
+                    if key not in year_quarter_dicc: 
+                        year_quarter_dicc[key] = Counter() #Si es la primera vez que se encuentra creo el contador
                             
-                        year_quarter_dicc[key][education_level] += int(row["PONDERA"]) #sumo la ponderacion al contador correspondiente
+                    year_quarter_dicc[key][education_level] += int(row["PONDERA"]) #sumo la ponderacion al contador correspondiente
 
     #Imprimo encabezado
-    print(f"\nNombre de Aglomerado: {conglomerates}")
+    print(f"\nAglomerado: {conglomerate}")
     print(f"{'Año':<6} {'Trimestre':<10} " + "  ".join(f"{education_level:<25}" for education_level in education_levels))
     print("-" * (6 + 10 + 27 * len(education_levels)))
 
