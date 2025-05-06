@@ -38,6 +38,17 @@ def agglomeration_id():
     }
     return dict_ag_id
 
+def region_id():
+    dict_re_id = {
+        "1" : "Gran Buenos Aires",
+        "40" : "Noroeste",
+        "41" : "Noreste",
+        "42" : "Cuyo",
+        "43" : "Pampeana",
+        "44" : "Patagonia"
+    }
+    return dict_re_id
+
 def last_quarter(file_path):
     """
     Calcula el trimestre procesado en un archivo.
@@ -409,4 +420,26 @@ def university_insufficient(path_individual, path_home):
         
         # Imprimo la cantidad 
         print(f"\nCANTIDAD DE PERSONAS CON NIVEL DE EDUCACION UNIVERSITARIO O SUPERIOR VIVIENDO EN CONDICION DE HABITABILIDAD INSUFICIENTE EN EL AÑO {year}, TRIMESTRE {max_quarter}: {university_counter_insufficient}")
-             
+def tenant_for_region(dataH):
+    re_id = region_id()
+    dict_region_tenant_data = {}
+    #Defino un diccionario: {"región" : [ocupantes inquilinos, total]}
+    for region in re_id:
+        dict_region_tenant_data.update({region : [0, 0]})
+    with dataH.open() as file:
+        dict_reader = csv.DictReader(file, delimiter=";")
+        for row in dict_reader:
+            # Desestima los régimenes de tenencia indeterminados
+            if row["II7"] in ("8", "9"):
+                continue
+            # Si son inquilinos de la vivienda, se actualiza la cuenta de ocupantes inquilinos
+            if row["II7"] == "2":
+                dict_region_tenant_data[row["REGION"]][0] += int(row["PONDERA"])
+            # Actualiza la cuenta total
+            dict_region_tenant_data[row["REGION"]][1] += int(row["PONDERA"])
+    # Calcula los porcentajes para cada región
+    region_tenant_percentage = map(lambda x: (x, dict_region_tenant_data[x][0] * 100 / dict_region_tenant_data[x][1]), dict_region_tenant_data)
+    list_to_print = sorted(region_tenant_percentage, key=lambda x: x[1], reverse=True)
+    print("PORCENTAJE DE INQUILINOS POR REGIÓN")
+    for item in list_to_print:
+        print("{:<24} {:<8}".format(f"{re_id[item[0]]}:", f"{item[1]:.3f} %"))
