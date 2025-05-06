@@ -97,7 +97,12 @@ def condition(archivo_entrada, archivo_salida):
     with open(archivo_entrada, newline="") as data_in, open(archivo_salida, "w", newline="") as data_out:
         reader = csv.reader(data_in, delimiter=";")
         writer = csv.writer(data_out, delimiter=";")
-        header = next(reader)
+        
+        try:
+            header = next(reader)
+        except StopIteration:
+            print("El archivo de entrada está vacío.")
+            return
 
         header.append("CONDICION_LABORAL")
         writer.writerow(header)

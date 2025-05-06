@@ -443,3 +443,62 @@ def tenant_for_region(dataH):
     print("PORCENTAJE DE INQUILINOS POR REGIÓN")
     for item in list_to_print:
         print("{:<24} {:<8}".format(f"{re_id[item[0]]}:", f"{item[1]:.3f} %"))
+
+def literacy(path_file_individual):
+    with open(path_file_individual, newline="") as file:
+        reader = csv.reader(file, delimiter=";")
+        try:
+            header = next(reader)
+        except StopIteration:
+            return "El archivo de entrada está vacío."
+
+        column_year = header.index("ANO4")
+        column_tri = header.index("TRIMESTRE")
+        column_pond = header.index("PONDERA")
+        column_age = header.index("CH06")
+        column_lit = header.index("CH09")
+
+        data_by_year = {}
+        for line in reader:
+            try:
+                year = int(line[column_year])
+                tri = int(line[column_tri])
+                pond = int(line[column_pond])
+                age = int(line[column_age])
+                can_read = int(line[column_lit])
+            except ValueError:
+                continue
+            #Busca el cuarto trimestre de cada año
+            if tri != 4:
+                continue
+            #Agrega el año al diccionario si todavía no está agregado
+            if year not in data_by_year:
+                data_by_year[year] = {'total': 0, 'cap': 0, 'incap': 0}
+
+            data_by_year[year]['total'] += pond
+            #Evalúa que se cumpla la condición de edad y diferencia si saben leer y escribir o no
+            if age >= 6:
+                if can_read == 1:
+                    data_by_year[year]['cap'] += pond
+                elif can_read == 2:
+                    data_by_year[year]['incap'] += pond
+        #Cálculo de porcentajes por año
+        result = {}
+        for year, values in data_by_year.items():
+            total = values['total']
+            cap = values['cap']
+            incap = values['incap']
+            percentage_cap = round((cap / total) * 100, 2) if total else 0
+            percentage_incap = round((incap / total) * 100, 2) if total else 0
+            result[year] = {
+                "Porcentaje alfabetizados": f"{percentage_cap}%",
+                "Porcentaje no alfabetizados": f"{percentage_incap}%"
+            }
+        #Impresión estilizada de los datos
+        print("Año | % Alfabetizados | % No alfabetizados")
+        print("-" * 40)
+
+        for year in sorted(result):
+            cap = result[year]["Porcentaje alfabetizados"]
+            incap = result[year]["Porcentaje no alfabetizados"]
+            print(f"{year} | {cap.rjust(14)} | {incap.rjust(18)}")

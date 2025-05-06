@@ -162,21 +162,35 @@ def set_habitability_condition(archivo_completo, archivo_salida):
         data_out_csv = csv.writer(data_out, delimiter=";")
         habitability_condition(header, data_reader, data_out_csv)
 
-def material(path_entrada): #Indica el tipo de hogar
-    with open(path_entrada, encoding= "utf-8", newline="") as file_h:
-        reader_h = list(csv.reader(file_h, delimiter=";"))
-        header_h = reader_h[0]
-        writer_h = csv.writer(file_h, delimiter=";")
-
-        header_h.append("MATERIAL_TECHUMBRE")
-        writer_h.writerow(header_h)
-        for row in file_h:
-            if int(row[47]) in (1,2,3,4): # fila 47: V4
-                row.append("Material durable")
-            elif int(row[47]) in (5,6,7):
-                row.append("Material precario")
-            elif int(row[47]) == 9:
-                row.append("No aplica")
-            else:
-                row.append("No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase.")
-            writer_h.writerow(row)
+def material(path_entrada, path_salida):
+    with open(path_entrada, "r", encoding="utf-8", newline="") as data_in, open(path_salida, "w", encoding="utf-8", newline="") as data_out:
+        reader = csv.reader(data_in, delimiter=";")
+        writer = csv.writer(data_out, delimiter=";")
+        
+        try:
+            header = next(reader)
+        except StopIteration:
+            print("El archivo de entrada está vacío.")
+            return
+    
+        header.append("MATERIAL_TECHUMBRE")
+        writer.writerow(header)
+        
+        column = header.index("V4")
+        
+        for line in reader:
+            try:
+                material = int(line[column])
+                if material in (1, 2, 3, 4):
+                    label = "Material durable"
+                elif material in (5, 6, 7):
+                    label = "Material precario"
+                elif material == 9:
+                    label = "No aplica"
+                else:
+                    label = "No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase."
+            except (ValueError, IndexError):
+                label = "Dato inválido"
+            row = line[:] + [label]
+            writer.writerow(row)
+            print(row)
