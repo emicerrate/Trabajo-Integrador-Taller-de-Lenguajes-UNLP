@@ -433,7 +433,7 @@ def tenant_for_region(dataH):
             if row["II7"] in ("8", "9"):
                 continue
             # Si son inquilinos de la vivienda, se actualiza la cuenta de ocupantes inquilinos
-            if row["II7"] == "2":
+            if row["II7"] == "3":
                 dict_region_tenant_data[row["REGION"]][0] += int(row["PONDERA"])
             # Actualiza la cuenta total
             dict_region_tenant_data[row["REGION"]][1] += int(row["PONDERA"])
