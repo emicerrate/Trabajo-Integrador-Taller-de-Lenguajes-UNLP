@@ -79,6 +79,7 @@ def compare_unfinished_high_school(path_individual):
         conglomerates = {row["AGLOMERADO"] for row in reader}
     ag_id = agglomeration_id()
     # Le pido al usuario los aglomerados a comparar
+    print("LISTA DE AGLOMERADOS:")
     for item in ag_id:
             print(f"{item}: {ag_id[item]}")
     
@@ -118,6 +119,7 @@ def compare_unfinished_high_school(path_individual):
         sorted_periods = sorted(all_periods, key=lambda x: (int(x[0]), int(x[1])))
 
         # Imprimo para cada año y trimestre la comparación de porcentajes entre ambos aglomerados
+        print(f"\nCOMPARACIÓN DE PORCENTAJE DE PERSONAS MAYORES DE EDAD CON SECUNDARIO INCOMPLETO ENTRE {ag_id[conglomerateA]} y {ag_id[conglomerateB]}")
         print(f"{'Año':<6} {'Trimestre':<11} {ag_id[conglomerateA]:<20} {ag_id[conglomerateB]:<20}")
         for year, quarter in sorted_periods:
             percentageA = 100 * unfinished_adults.get((conglomerateA, year, quarter), 0) / adults[(conglomerateA, year, quarter)]
@@ -213,9 +215,10 @@ def adults_per_education_level(path_individual):
         reader = list(csv.DictReader(file, delimiter=";"))  # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez
         conglomerates = {row["AGLOMERADO"] for row in reader}
     ag_id = agglomeration_id()
-    while True:
-        for item in ag_id:
+    print("LISTA DE AGLOMERADOS:")
+    for item in ag_id:
             print(f"{item}: {ag_id[item]}")
+    while True:
         conglomerate = input("Ingrese el número de aglomerado: ")
         if conglomerate not in conglomerates:
             print("ERROR: El aglomerado que introdujo no es válido, por favor, intente de nuevo.")
@@ -502,3 +505,58 @@ def literacy(path_file_individual):
             cap = result[year]["Porcentaje alfabetizados"]
             incap = result[year]["Porcentaje no alfabetizados"]
             print(f"{year} | {cap.rjust(14)} | {incap.rjust(18)}")
+
+def top5_university_occupancy(path_individual, path_home):
+    """
+    Calcula los 5 aglomerados con mayor porcentaje de hogares con dos o más ocupantes con estudios universitarios 
+    o superiores finalizados del último trimestre procesado. 
+    Args:
+        path_individual (Path): Ruta al archivo usu_individual_final del cual se leera la información de las personas.
+        path_home (Path): Ruta al archivo usu_home_final del cual se leera la información de las casas.
+    Return:
+        None
+    """
+
+    ag_id = agglomeration_id()
+
+    # Calculo el ultimo trimestre y me guardo su número y el año correspondiente
+    max_year, max_quarter = last_quarter(path_individual)
+
+    
+    with path_individual.open("r", newline="") as individual, path_home.open("r", newline="") as home:
+        individual_reader = csv.DictReader(individual, delimiter=";")
+        home_reader = csv.DictReader(home, delimiter=";")
+
+        # Creo un contador donde para cada casa iré contando cuantas personas cumplen con el requisito, otro donde para
+        # cada aglomerado contaré la cantidad de casas que tiene, y un último donde para cada aglomerado contará las
+        # casas que cumplen con los requisitos
+        required_per_house = Counter()
+        houses_per_conglomerate = Counter()
+        required_houses = Counter()
+        
+        # Para cada persona verifico si cumple los requisitos y la sumo a su correspondiente casa
+        for person in individual_reader:
+            if person["ANO4"] == str(max_year) and person["TRIMESTRE"] == str(max_quarter):
+                if person["NIVEL_ED_str"] == "SUPERIOR O UNIVERSITARIO":
+                    required_per_house.update({person["CODUSU"]: 1})
+        
+        # Para cada casa la cuento en su respectivo aglomerado y si cumple la condición la cuento en las buscadas
+        for house in home_reader:
+            if house["ANO4"] == str(max_year) and house["TRIMESTRE"] == str(max_quarter):
+                houses_per_conglomerate.update({house["AGLOMERADO"]: 1})
+                if required_per_house[house["CODUSU"]] >= 2:
+                    required_houses.update({house["AGLOMERADO"]: 1})
+
+        # Calculo los porcentajes de las casas buscadas por aglomerado
+        percentages = dict()
+        for conglomerate in houses_per_conglomerate:
+            try:
+                percentages[conglomerate] = 100 * required_houses[conglomerate] / houses_per_conglomerate[conglomerate]
+            except ZeroDivisionError:
+                percentages[conglomerate] = 0
+        
+        # Me quedo con el top 5 y se lo muestro al usuario
+        top5 = sorted(percentages.items(), key=lambda x: x[1], reverse=True)[:5]
+        print("TOP 5 AGLOMERADOS CON MAYOR PORCENTAJE DE HOGARES CON DOS O MÁS OCUPANTES CON ESTUDIOS UNIVERSITARIOS O SUPERIORES FINALIZADOS:")
+        for top, elem in enumerate(top5):
+            print(f"{top+1}. {ag_id[elem[0]]}: {elem[1]:.2f}%")
