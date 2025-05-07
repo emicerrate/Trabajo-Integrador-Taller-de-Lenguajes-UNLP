@@ -63,7 +63,7 @@ def education_level_ref(line, column):
     
 def education_level(archivo_entrada, archivo_salida):
     """Agrega la columna 'NIVEL_ED_str' que indica el máximo nivel educativo en cadena de texto."""
-    with open(archivo_entrada, "r") as data_ind, open(archivo_salida, "w") as data_out:
+    with open(archivo_entrada, "r") as data_ind, open(archivo_salida, "w", newline="") as data_out:
         data_ind = csv.reader(data_ind, delimiter=";")
         data_out_csv = csv.writer(data_out, delimiter=";")
         header = next(data_ind)
@@ -103,11 +103,12 @@ def condition(archivo_entrada, archivo_salida):
         except StopIteration:
             print("El archivo de entrada está vacío.")
             return
+        
+        column_estado = header.index("ESTADO")
+        column_cat = header.index("CAT_OCUP")
 
         header.append("CONDICION_LABORAL")
         writer.writerow(header)
-        column_estado = header.index("ESTADO")
-        column_cat = header.index("CAT_OCUP")
 
         for line in reader:
             state = int(line[column_estado])
