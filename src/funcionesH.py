@@ -24,23 +24,20 @@ def all_togetherH(path_salida):
                     for row in reader:
                         writer.writerow(row)
 
-def home_type(data):
+def home_type(path_entrada, path_salida):
     """
     Genera una nueva columna llamada TIPO_HOGAR que indica el tipo de hogar:
         - "Unipersonal" (una persona).
         - "Nuclear" (2 a 4 personas).
         - "Extendido" (5 o más personas).
     """
-    with data.open("r", newline="") as file_in:
+    with path_entrada.open("r", newline="") as file_in, path_salida.open("w", newline="") as file_out:
         reader = csv.DictReader(file_in, delimiter=";")
-        rows = list(reader)  
         columns = reader.fieldnames + ["TIPO_HOGAR"]
-        
     # Escribir los datos con la nueva columna
-    with data.open("w", newline="") as file_out:
         writer = csv.DictWriter(file_out, fieldnames=columns, delimiter=";")
         writer.writeheader()
-        for row in rows:
+        for row in reader:
             amount = int(row["IX_TOT"])
             row["TIPO_HOGAR"] = (
                 "Unipersonal" if amount == 1 else
@@ -163,6 +160,7 @@ def set_habitability_condition(archivo_completo, archivo_salida):
         habitability_condition(header, data_reader, data_out_csv)
 
 def material(path_entrada, path_salida):
+    
     with open(path_entrada, "r", encoding="utf-8", newline="") as data_in, open(path_salida, "w", encoding="utf-8", newline="") as data_out:
         reader = csv.reader(data_in, delimiter=";")
         writer = csv.writer(data_out, delimiter=";")
@@ -193,4 +191,3 @@ def material(path_entrada, path_salida):
                 label = "Dato inválido"
             row = line[:] + [label]
             writer.writerow(row)
-            print(row)
