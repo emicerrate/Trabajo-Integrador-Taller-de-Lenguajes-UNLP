@@ -8,6 +8,8 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.python-version
+exit()
 build/
 data_out/usu_*
 develop-eggs/
@@ -138,6 +140,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+
 
 # Spyder project settings
 .spyderproject
