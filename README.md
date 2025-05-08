@@ -8,9 +8,12 @@ Aplicación de visualización de datos de la EPH (Encuesta Permanente de Hogares
 ## Instalación  
 ```bash
 git clone [https://gitlab.catedras.linti.unlp.edu.ar/python-2025/proyectos/grupo20/code.git]  
-pip install -r requirements.txt  
-streamlit run app.py  
 
+# Navegar al directorio del proyecto 
+pip install -r requirements.txt  
+streamlit run app.py 
+
+```
 ## Grupo 20
 
 - ALEJANDRO MANUEL AMOR
