@@ -1,4 +1,4 @@
-# Encuest.AR  
+# ARGencuesta 
 Aplicación de visualización de datos de la EPH (Encuesta Permanente de Hogares) desarrollada en Python con Streamlit.  
 
 ## Requisitos  
@@ -9,7 +9,7 @@ Aplicación de visualización de datos de la EPH (Encuesta Permanente de Hogares
 ```bash
 git clone [https://gitlab.catedras.linti.unlp.edu.ar/python-2025/proyectos/grupo20/code.git]  
 
-# Navegar al directorio del proyecto 
+# Navegar al directorio del proyecto para instalar y ejecutar streamlit
 pip install -r requirements.txt  
 streamlit run app.py 
 
