@@ -564,3 +564,39 @@ def top5_university_occupancy(path_individual, path_home):
         print("TOP 5 AGLOMERADOS CON MAYOR PORCENTAJE DE HOGARES CON DOS O MÁS OCUPANTES CON ESTUDIOS UNIVERSITARIOS O SUPERIORES FINALIZADOS:")
         for top, elem in enumerate(top5):
             print(f"{top+1}. {ag_id[elem[0]]}: {elem[1]:.2f}%")
+
+def unemployment(path_file_individual):
+    with open(path_file_individual, newline="") as file:
+        reader = csv.reader(file, delimiter=";")
+        try:
+            header = next(reader)
+        except StopIteration:
+            return "El archivo de entrada está vacío."
+
+        column_ocup = header.index("CAT_OCUP")
+        column_year = header.index("ANO4")
+        column_tri = header.index("TRIMESTRE")
+        column_pond = header.index("PONDERA")
+        dict_y = {}
+        min = float("inf")
+        for line in reader:
+            try:
+                year = int(line[column_year])
+                tri = int(line[column_tri])    
+                pond = int(line[column_pond])
+                cat_ocu = int(line[column_ocup])
+            except ValueError:
+                continue
+            
+            if year not in dict_y:
+                dict_y[year] = {'trim': tri, 'unemployed': 0}
+            elif year in dict_y and tri not in dict_y[year]:
+                    dict_y[year]["trim"] = tri
+                    if cat_ocu == 2:
+                        dict_y[year]["unemployed"] += pond
+            
+            if dict_y[year]["unemployed"] < min:
+                min_year = year
+                min_tri = tri
+
+        print(f"La menor desocupación se vio en el trimestre {min_tri} del año {min_year}.")
