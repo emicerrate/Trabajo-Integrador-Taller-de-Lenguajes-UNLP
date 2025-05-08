@@ -411,7 +411,11 @@ def university_insufficient(path_individual, path_home):
         home_reader = list(csv.DictReader(home, delimiter=";"))
         
         # Calculo el ultimo trimestre y me guardo su numero
-        max_quarter = max(int(row["TRIMESTRE"]) for row in individual_reader if int(row["ANO4"]) == year)
+        try:
+            max_quarter = max(int(row["TRIMESTRE"]) for row in individual_reader if int(row["ANO4"]) == year)
+        except ValueError:
+            print(f"No se encontraron datos para el año {year}.")
+            return    
 
         # Guardo las casas que corresponden al ultimo trimestre en un diccionario
         houses = {house["CODUSU"]: house for house in home_reader if int(house["ANO4"]) == year and int(house["TRIMESTRE"]) == max_quarter}
