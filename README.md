@@ -38,7 +38,7 @@ code/
     │── __pycache__/
 │   ├── __init__.py   
     │── constantes.py       # Funciones constantes
-    ├── funcionesA.py       # Funciones 
+    ├── funcionesA.py       # Funciones aplicación Streamlit
     │── funcionesH.py       # Funciones aplicación hogar
     │── funcionesI.py       # Funciones aplicación individual
     │── funcionesT.py       # Funciones aplicación total
