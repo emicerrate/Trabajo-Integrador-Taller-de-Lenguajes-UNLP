@@ -452,6 +452,9 @@ def tenant_for_region(dataH):
         print("{:<24} {:<8}".format(f"{re_id[item[0]]}:", f"{item[1]:.3f} %"))
 
 def literacy(path_file_individual):
+    """Informa, año a año, el porcentaje de mayores de 6 años capaces e incapaces de leer y escribir, tomando solamente la información
+    del último trimestre de cada año.
+    """
     with open(path_file_individual, newline="") as file:
         reader = csv.reader(file, delimiter=";")
         try:
@@ -566,6 +569,7 @@ def top5_university_occupancy(path_individual, path_home):
             print(f"{top+1}. {ag_id[elem[0]]}: {elem[1]:.2f}%")
 
 def unemployment(path_file_individual):
+    """Informa el año y trimestre donde hubo menor desocupación"""
     with open(path_file_individual, newline="") as file:
         reader = csv.reader(file, delimiter=";")
         try:
@@ -621,6 +625,9 @@ def update_totals(count, pond, mat, total):
 
 #Inciso 11
 def percentage_precarious_material(path_file_hogar):
+    """Se pide al usuario que ingrese un año y busca, en el último trimestre almacenado de dicho año, los aglomerados con mayor y menor
+    porcentaje de viviendas de "Material precario"
+    """
     from collections import defaultdict
 
     with open(path_file_hogar, newline="") as file:

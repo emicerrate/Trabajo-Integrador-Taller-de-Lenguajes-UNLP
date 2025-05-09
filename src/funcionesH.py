@@ -160,7 +160,13 @@ def set_habitability_condition(archivo_completo, archivo_salida):
         habitability_condition(header, data_reader, data_out_csv)
 
 def material(path_entrada, path_salida):
-    
+    """Genera una nueva columna llamada MATERIAL_TECHUMBRE que indica el tipo de hogar basado en el campo V4
+    Material durable: si la cubierta exterior del techo es de membrana/cubierta asfáltica, baldosa/losa sin cubierta, pizarra/teja, o
+    chapa de metal sin cubierta.
+    Material precario: si la cubierta exterior del techo es de chapa de fibrocemento/plástico, chapa de cartón o saña/tabla/paja con barro/
+    paja sola.
+    No aplica: si el departamento está en propiedad horizontal
+    """
     with open(path_entrada, "r", encoding="utf-8", newline="") as data_in, open(path_salida, "w", encoding="utf-8", newline="") as data_out:
         reader = csv.reader(data_in, delimiter=";")
         writer = csv.writer(data_out, delimiter=";")
@@ -186,7 +192,7 @@ def material(path_entrada, path_salida):
                 elif material == 9:
                     label = "No aplica"
                 else:
-                    label = "No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase."
+                    label = "N/D"
             except (ValueError, IndexError):
                 label = "Dato inválido"
             row = line[:] + [label]

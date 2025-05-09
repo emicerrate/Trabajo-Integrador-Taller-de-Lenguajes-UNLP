@@ -94,6 +94,14 @@ def gender(archivo_entrada, archivo_salida):
             data_out_csv.writerow(row)
 
 def condition(archivo_entrada, archivo_salida):
+    """Crea la columna CONDICION_LABORAL, en base al su condición de actividad y categoría ocupacional.
+    Condición laboral - Ocupado autónomo: si su condición de actividad es "ocupado" y su categoría ocupacional es "Patrón" o "Cuenta propia"
+    Condición laboral - Ocupado dependiente: si su condición de actividad es "ocupado" y su categoría ocupacional es "Obrero o empleado", "Trabajador familiar
+    sin remuneración" o "Ns/Nr"
+    Condición laboral - Desocupado: si su condición de actividad es "Desocupado"
+    Condición laboral - Inactivo: si su condición de actividad es "Inactivo"
+    Condición laboral - Fuera de categoría/sin información: si su condición de actividad es "Menor de 10 años"
+    """
     with open(archivo_entrada, newline="") as data_in, open(archivo_salida, "w", newline="") as data_out:
         reader = csv.reader(data_in, delimiter=";")
         writer = csv.writer(data_out, delimiter=";")
@@ -124,7 +132,7 @@ def condition(archivo_entrada, archivo_salida):
             elif state == 4:
                 label = "Fuera de categoría/sin información"
             else:
-                label = "No sé qué onda, en estos casos no se explicita qué es lo que se quiere que pase."
+                label = "N/A"
             
             row = line[:] + [label] 
             writer.writerow(row)
