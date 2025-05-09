@@ -587,7 +587,7 @@ def unemployment(path_file_individual):
                 cat_ocu = int(line[column_ocup])
             except ValueError:
                 continue
-            
+
             if year not in dict_y:
                 dict_y[year] = {'trim': tri, 'unemployed': 0}
             elif year in dict_y and tri not in dict_y[year]:
@@ -600,3 +600,77 @@ def unemployment(path_file_individual):
                 min_tri = tri
 
         print(f"La menor desocupación se vio en el trimestre {min_tri} del año {min_year}.")
+
+#Funciones auxiliares inciso 11
+def get_valid_year():
+    while True:
+        try:
+            number = int(input("Ingrese un año: "))
+            if number in range (2016,2026):
+                return number
+            else:
+                print("Año inválido. Ingrese un año válido: ")
+        except ValueError:
+            print("El tipo de dato es incorrecto. Ingrese un código válido: ")
+
+def update_totals(count, pond, mat, total):
+    count += pond
+    if mat.lower == "material precario":
+        total += pond
+    return count, total
+
+#Inciso 11
+def percentage_precarious_material(path_file_hogar):
+    from collections import defaultdict
+
+    with open(path_file_hogar, newline="") as file:
+        reader = csv.reader(file, delimiter=";")
+        try:
+            header = next(reader)
+        except StopIteration:
+            return "El archivo de entrada está vacío."
+        
+        column_year = header.index("ANO4")
+        column_tri = header.index("TRIMESTRE")
+        column_aglo = header.index("AGLOMERADO")
+        column_pond = header.index("PONDERA")
+        column_material = header.index("MATERIAL_TECHUMBRE")
+
+        year = get_valid_year()
+
+        max_tri = defaultdict(int)        
+        count_dict = defaultdict(int)     
+        total_dict = defaultdict(int)
+
+        for line in reader:
+            try:
+                aglo = int(line[column_aglo])
+                tri = int(line[column_tri])
+                pond = int(line[column_pond])
+                mat = str(line[column_material])
+                line_year = int(line[column_year])
+            except ValueError:
+                continue
+            if line_year != year:
+                continue
+            if tri > max_tri[aglo]:
+                max_tri[aglo] = tri
+                count_dict[aglo] = 0
+                total_dict[aglo] = 0
+            if tri == max_tri[aglo]:
+                count_dict[aglo], total_dict[aglo] = update_totals(count_dict[aglo], pond, mat, total_dict[aglo])
+            
+            for aglo in sorted(count_dict.keys()):
+                count = count_dict[aglo]
+                total = total_dict[aglo]
+                percentage = (total / count * 100) if count else 0
+                aux_max = float("-inf")
+                aux_min = float("inf")
+                if percentage > aux_max:
+                    aglo_max = aglo
+                    aux_max = percentage
+                if percentage < aux_min:
+                    aglo_min = aglo
+                    aux_min = percentage
+                print(f"Aglomerado con mayor porcentaje de hogares con materiales precarios: {aglo_max}")
+                print(f"Aglomerado con menor porcentaje de hogares con materiales precarios: {aglo_min}")
