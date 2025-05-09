@@ -1,13 +1,13 @@
 import csv
-from src.constantes import DATA_OUT_PATH, DATA_PATH
+from src.constantes import DATA_PATH
 from src.funcionesI import all_togetherI
 from src.funcionesH import all_togetherH
 
 def range_dataset():
-    home_final_file = DATA_OUT_PATH / "usu_hogar_final.csv"
+    home_init_file = DATA_PATH / "usu_hogar_inicial.csv"
     years = set()
     quarters = set()
-    with open(home_final_file, newline='', encoding="utf-8") as file:
+    with open(home_init_file, newline='', encoding="utf-8") as file:
         reader =csv.DictReader(file, delimiter=";")
         for row in reader:
             years.add(int(row["ANO4"]))
