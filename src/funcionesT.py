@@ -210,6 +210,12 @@ def foreign_university_student_percent(data):
     print(f"""AÑO: {year} TRIMESTRE: {tri}\nPorcentaje de personas no nacidas en Argentina que cursaron un nivel universitario o superior: {perc:.3f}%""")
 
 def adults_per_education_level(path_individual):
+    """
+    Retorna una tabla de un aglomerado que contiene la cantidad de personas mayores de edad según su nivel de estudios alcanzados, por año y por trimestre
+    Parametro:
+        path_individual (Path): Ruta al archivo usu_individual_final del cual se leera.
+    
+    """
     
     with path_individual.open("r", newline="") as file:
         reader = list(csv.DictReader(file, delimiter=";"))  # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez
@@ -391,6 +397,13 @@ def owners_occupation_per_ag(dataH):
         print("{:<36} {:<8}".format(f"{ag_id[agglo]}:", f"{(dict_ag_list_ow_oc[agglo][0] * 100 / dict_ag_list_ow_oc[agglo][1]):.3f} %"))
         
 def university_insufficient(path_individual, path_home):
+    """
+    Informa la cantidad de personas que hayan cursado nivel universitario o superior y que vivan en una vivienda en condicion de habitabilidad insuficiente
+    Parametros:
+        path_individual (Path): Ruta al archivo usu_individual_final del cual se leera.
+        path_home (Path): Ruta al archivo usu_hogar_final del cual se leera.
+
+    """
     # Pido año al usuario y lo valido
     while True:
         try:
@@ -452,6 +465,9 @@ def tenant_for_region(dataH):
         print("{:<24} {:<8}".format(f"{re_id[item[0]]}:", f"{item[1]:.3f} %"))
 
 def literacy(path_file_individual):
+    """Informa, año a año, el porcentaje de mayores de 6 años capaces e incapaces de leer y escribir, tomando solamente la información
+    del último trimestre de cada año.
+    """
     with open(path_file_individual, newline="") as file:
         reader = csv.reader(file, delimiter=";")
         try:
@@ -566,6 +582,7 @@ def top5_university_occupancy(path_individual, path_home):
             print(f"{top+1}. {ag_id[elem[0]]}: {elem[1]:.2f}%")
 
 def unemployment(path_file_individual):
+    """Informa el año y trimestre donde hubo menor desocupación"""
     with open(path_file_individual, newline="") as file:
         reader = csv.reader(file, delimiter=";")
         try:
@@ -621,6 +638,9 @@ def update_totals(count, pond, mat, total):
 
 #Inciso 11
 def percentage_precarious_material(path_file_hogar):
+    """Se pide al usuario que ingrese un año y busca, en el último trimestre almacenado de dicho año, los aglomerados con mayor y menor
+    porcentaje de viviendas de "Material precario"
+    """
     from collections import defaultdict
     ag_id = agglomeration_id()
 
