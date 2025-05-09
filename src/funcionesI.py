@@ -75,7 +75,10 @@ def education_level(archivo_entrada, archivo_salida):
             data_out_csv.writerow(row)
 
 def gender(archivo_entrada, archivo_salida):
-    'Agrega la columna CH04_str que indica el género según los valores de CH04.'
+    """
+    Agrega la columna CH04_str que indica el género en formato (Masculino o Femenino) según los valores de CH04 (1 o 2)
+
+    """
     with open(archivo_entrada, "r") as data_ind, open(archivo_salida, "w", newline="") as data_out:
         data_ind = csv.reader(data_ind, delimiter=";")
         data_out_csv = csv.writer(data_out, delimiter=";")

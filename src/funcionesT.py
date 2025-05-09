@@ -210,6 +210,12 @@ def foreign_university_student_percent(data):
     print(f"""AÑO: {year} TRIMESTRE: {tri}\nPorcentaje de personas no nacidas en Argentina que cursaron un nivel universitario o superior: {perc:.3f}%""")
 
 def adults_per_education_level(path_individual):
+    """
+    Retorna una tabla de un aglomerado que contiene la cantidad de personas mayores de edad según su nivel de estudios alcanzados, por año y por trimestre
+    Parametro:
+        path_individual (Path): Ruta al archivo usu_individual_final del cual se leera.
+    
+    """
     
     with path_individual.open("r", newline="") as file:
         reader = list(csv.DictReader(file, delimiter=";"))  # Convierto en lista de diccionarios porque necesito correrlo mas de 1 vez
@@ -391,6 +397,13 @@ def owners_occupation_per_ag(dataH):
         print("{:<36} {:<8}".format(f"{ag_id[agglo]}:", f"{(dict_ag_list_ow_oc[agglo][0] * 100 / dict_ag_list_ow_oc[agglo][1]):.3f} %"))
         
 def university_insufficient(path_individual, path_home):
+    """
+    Informa la cantidad de personas que hayan cursado nivel universitario o superior y que vivan en una vivienda en condicion de habitabilidad insuficiente
+    Parametros:
+        path_individual (Path): Ruta al archivo usu_individual_final del cual se leera.
+        path_home (Path): Ruta al archivo usu_hogar_final del cual se leera.
+
+    """
     # Pido año al usuario y lo valido
     while True:
         try:
