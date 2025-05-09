@@ -174,7 +174,7 @@ def material(path_entrada, path_salida):
         header.append("MATERIAL_TECHUMBRE")
         writer.writerow(header)
         
-        column = header.index("V4")
+        column = header.index("IV4")
         
         for line in reader:
             try:

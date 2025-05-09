@@ -615,13 +615,14 @@ def get_valid_year():
 
 def update_totals(count, pond, mat, total):
     count += pond
-    if mat.lower == "material precario":
+    if mat.lower() == "material precario":
         total += pond
     return count, total
 
 #Inciso 11
 def percentage_precarious_material(path_file_hogar):
     from collections import defaultdict
+    ag_id = agglomeration_id()
 
     with open(path_file_hogar, newline="") as file:
         reader = csv.reader(file, delimiter=";")
@@ -638,8 +639,8 @@ def percentage_precarious_material(path_file_hogar):
 
         year = get_valid_year()
 
-        max_tri = defaultdict(int)        
-        count_dict = defaultdict(int)     
+        max_tri = defaultdict(int)
+        count_dict = defaultdict(int)
         total_dict = defaultdict(int)
 
         for line in reader:
@@ -659,18 +660,20 @@ def percentage_precarious_material(path_file_hogar):
                 total_dict[aglo] = 0
             if tri == max_tri[aglo]:
                 count_dict[aglo], total_dict[aglo] = update_totals(count_dict[aglo], pond, mat, total_dict[aglo])
-            
-            for aglo in sorted(count_dict.keys()):
-                count = count_dict[aglo]
-                total = total_dict[aglo]
-                percentage = (total / count * 100) if count else 0
-                aux_max = float("-inf")
-                aux_min = float("inf")
-                if percentage > aux_max:
-                    aglo_max = aglo
-                    aux_max = percentage
-                if percentage < aux_min:
-                    aglo_min = aglo
-                    aux_min = percentage
-                print(f"Aglomerado con mayor porcentaje de hogares con materiales precarios: {aglo_max}")
-                print(f"Aglomerado con menor porcentaje de hogares con materiales precarios: {aglo_min}")
+        perc_max = float("-inf")
+        perc_min = float("inf")
+        
+        for aglo in sorted(count_dict.keys()):
+            count = count_dict[aglo]
+            total = total_dict[aglo]
+            percentage = (total / count * 100) if count else 0
+            aux_max = float("-inf")
+            aux_min = float("inf")
+            if percentage > perc_max:
+                aglo_max = aglo
+                perc_max = percentage
+            if percentage < perc_min:
+                aglo_min = aglo
+                perc_min = percentage
+        print(f"Aglomerado con mayor porcentaje de hogares con materiales precarios: {ag_id[str(aglo_max)]}")
+        print(f"Aglomerado con menor porcentaje de hogares con materiales precarios: {ag_id[str(aglo_min)]}")
