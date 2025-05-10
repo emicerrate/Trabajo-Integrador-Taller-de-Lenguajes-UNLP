@@ -330,10 +330,10 @@ def percentage_university_level_clusters(path_individual):
         total_counts = {}
         
         for row in quarter_filtered:
-            education_level = int(row["UNIVERSITARIO"])
-            
+            applied = int(row["UNIVERSITARIO"])
+            education_level = row["NIVEL_ED_str"]
             # Filtro los casos que no aplican si UNIVERSITARIO = 2
-            if education_level in [0, 1]:
+            if applied in [0, 1]:
                 cluster = ag_id[row["AGLOMERADO"]]
                 weight = int(row["PONDERA"])
                 
@@ -345,7 +345,7 @@ def percentage_university_level_clusters(path_individual):
                 total_counts[cluster] += weight
                 
                 # Se suman cuando es universitario
-                if education_level == 1:
+                if education_level == "SUPERIOR O UNIVERSITARIO":
                     university_counts[cluster] += weight
         
         # Se imprimen los aglomerados con su porcentaje de  universitarios
