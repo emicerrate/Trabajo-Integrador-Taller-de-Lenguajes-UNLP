@@ -440,7 +440,11 @@ def university_insufficient(path_individual, path_home):
         
         # Imprimo la cantidad 
         print(f"\nCANTIDAD DE PERSONAS CON NIVEL DE EDUCACION UNIVERSITARIO O SUPERIOR VIVIENDO EN CONDICION DE HABITABILIDAD INSUFICIENTE EN EL AÑO {year}, TRIMESTRE {max_quarter}: {university_counter_insufficient}")
+
 def tenant_for_region(dataH):
+    """
+        Se ordena las regiones de forma descendente según el porcentaje de inquilinos de cada una.
+    """
     re_id = region_id()
     dict_region_tenant_data = {}
     #Defino un diccionario: {"región" : [ocupantes inquilinos, total]}
@@ -680,6 +684,7 @@ def percentage_precarious_material(path_file_hogar):
                 total_dict[aglo] = 0
             if tri == max_tri[aglo]:
                 count_dict[aglo], total_dict[aglo] = update_totals(count_dict[aglo], pond, mat, total_dict[aglo])
+
         perc_max = float("-inf")
         perc_min = float("inf")
         
@@ -687,8 +692,7 @@ def percentage_precarious_material(path_file_hogar):
             count = count_dict[aglo]
             total = total_dict[aglo]
             percentage = (total / count * 100) if count else 0
-            aux_max = float("-inf")
-            aux_min = float("inf")
+
             if percentage > perc_max:
                 aglo_max = aglo
                 perc_max = percentage
