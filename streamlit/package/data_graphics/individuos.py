@@ -1,6 +1,43 @@
 import pandas as pd
 from st_constantes import DATA_OUT_PATH
 
+def agglomeration_id():
+    dict_ag_id = {
+    "2" : "Gran La Plata",
+    "3" : "Bahía Blanca - Cerri",
+    "4" : "Gran Rosario",
+    "5" : "Gran Santa Fé",
+    "6" : "Gran Paraná",
+    "7" : "Posadas",
+    "8" : "Gran Resistencia",
+    "9" : "Comodoro Rivadavia - Rada Tilly",
+    "10" : "Gran Mendoza",
+    "12" : "Corrientes",
+    "13" : "Gran Córdoba",
+    "14" : "Concordia",
+    "15" : "Formosa",
+    "17" : "Neuquén – Plottier",
+    "18" : "Santiago del Estero - La Banda",
+    "19" : "Jujuy - Palpalá",
+    "20" : "Río Gallegos",
+    "22" : "Gran Catamarca",
+    "23" : "Gran Salta",
+    "25" : "La Rioja",
+    "26" : "Gran San Luis",
+    "27" : "Gran San Juan",
+    "29" : "Gran Tucumán - Tafí Viejo",
+    "30" : "Santa Rosa – Toay",
+    "31" : "Ushuaia - Río Grande",
+    "32" : "Ciudad Autónoma de Buenos Aires",
+    "33" : "Partidos del GBA",
+    "34" : "Mar del Plata",
+    "36" : "Río Cuarto",
+    "38" : "San Nicolás – Villa Constitución",
+    "91" : "Rawson – Trelew",
+    "93" : "Viedma – Carmen de Patagones"
+    }
+    return dict_ag_id
+
 # FUNCIONES PARA PAGINA 5
 
 def load_individual_data():
@@ -33,10 +70,12 @@ def filter_by_year_and_quarter(df, year, quarter):
 
 def get_unemployed_by_education(df):
     """
-    Devuelve una serie con el conteo de personas desocupadas por nivel educativo.
+    Devuelve una serie con el total ponderado de personas desocupadas por nivel educativo.
     """
     unemployed = df[df["CONDICION_LABORAL"] == "Desocupado"]
-    return unemployed["NIVEL_ED_str"].value_counts().sort_index()
+    return (
+        unemployed.groupby("NIVEL_ED_str")["PONDERA"].sum().sort_index()
+    )
 
 def get_agglomerate_list(df):
     """
@@ -46,28 +85,28 @@ def get_agglomerate_list(df):
 
 def get_unemployment_rate_over_time(df, selected_agglomerate):
     """
-    Devuelve un DataFrame con la evolución de la tasa de desempleo por período (AÑO + TRIMESTRE).
+    Devuelve un DataFrame con la evolución de la tasa de desempleo ponderada por período (AÑO + TRIMESTRE).
     Si se selecciona un aglomerado, se filtra por él.
     """
 
-    # Se filtra por aglomerado si se selecciona uno (evitar "Todo el país")
+    # Filtrar por aglomerado si corresponde
     if selected_agglomerate != "Todo el país":
         df = df[df["AGLOMERADO"] == selected_agglomerate]
 
-    # Se agrupa por año y trimestre
-    grouped = df.groupby(["ANO4", "TRIMESTRE", "CONDICION_LABORAL"]).size().unstack(fill_value=0)
+    # Agrupar por año, trimestre y condición laboral y sumar PONDERA
+    grouped = df.groupby(["ANO4", "TRIMESTRE", "CONDICION_LABORAL"])["PONDERA"].sum().unstack(fill_value=0)
 
-    # Asegurar que estén las columnas esperadas
+    # Asegurar que estén las columnas necesarias
     for col in ["Ocupado dependiente", "Ocupado autónomo", "Desocupado"]:
         if col not in grouped.columns:
             grouped[col] = 0
 
-    # Calcular ocupados y tasa de desempleo
+    # Calcular ocupados y tasa de desempleo ponderada
     grouped["ocupados"] = grouped["Ocupado dependiente"] + grouped["Ocupado autónomo"]
     grouped["desocupados"] = grouped["Desocupado"]
     grouped["tasa_desempleo"] = (grouped["desocupados"] / (grouped["ocupados"] + grouped["desocupados"])) * 100
 
-    # Resetear índice y crear columna de período
+    # Crear columna de período
     grouped = grouped.reset_index()
     grouped["periodo"] = grouped["ANO4"].astype(str) + "-T" + grouped["TRIMESTRE"].astype(str)
 
@@ -83,8 +122,8 @@ def get_employment_rate_over_time(df, selected_agglomerate):
     if selected_agglomerate != "Todo el país":
         df = df[df["AGLOMERADO"] == selected_agglomerate]
 
-    # Se agrupa por año, trimestre y condición laboral
-    grouped = df.groupby(["ANO4", "TRIMESTRE", "CONDICION_LABORAL"]).size().unstack(fill_value=0)
+    # Se agrupa por año, trimestre y condición laboral y se suma la columna PONDERA
+    grouped = df.groupby(["ANO4", "TRIMESTRE", "CONDICION_LABORAL"])["PONDERA"].sum().unstack(fill_value=0)
 
     # Asegurar que estén las columnas esperadas
     for col in ["Ocupado dependiente", "Ocupado autónomo", "Desocupado"]:
@@ -101,3 +140,29 @@ def get_employment_rate_over_time(df, selected_agglomerate):
     grouped["periodo"] = grouped["ANO4"].astype(str) + "-T" + grouped["TRIMESTRE"].astype(str)
 
     return grouped[["periodo", "tasa_empleo"]].sort_values("periodo")
+
+def get_employment_distribution_by_agglomerate(df):
+    dict_ag_id = agglomeration_id()
+
+    # Filtrar solo ocupados
+    ocupy = df[df["CONDICION_LABORAL"].isin(["Ocupado dependiente", "Ocupado autónomo"])]
+
+    # Agrupar por aglomerado y tipo de empleo (PP04A), sumando las ponderaciones
+    distribution = ocupy.groupby(["AGLOMERADO", "PP04A"])["PONDERA"].sum().unstack(fill_value=0)
+
+    for col in [1, 2, 3]:
+        if col not in distribution.columns:
+            distribution[col] = 0
+
+    distribution["total_ocupados"] = distribution[1] + distribution[2] + distribution[3]
+
+    distribution["% estatal"] = (distribution[1] / distribution["total_ocupados"]) * 100
+    distribution["% privado"] = (distribution[2] / distribution["total_ocupados"]) * 100
+    distribution["% otro"] = (distribution[3] / distribution["total_ocupados"]) * 100
+
+    distribution = distribution.reset_index()
+    distribution["AGLOMERADO"] = distribution["AGLOMERADO"].astype(str).map(dict_ag_id)
+    distribution = distribution.sort_values("AGLOMERADO")
+    distribution = distribution.set_index("AGLOMERADO")
+
+    return distribution[["total_ocupados", "% estatal", "% privado", "% otro"]]
