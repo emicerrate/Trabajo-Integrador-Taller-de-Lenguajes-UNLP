@@ -1,5 +1,5 @@
 import streamlit as st
-from src.funcionesA import range_dataset, init_file_reset
+from package.data_graphics.funcionesA import range_dataset, init_file_reset
 
 init_file_reset()
 min_quarter, min_year, max_quarter, max_year = range_dataset()
