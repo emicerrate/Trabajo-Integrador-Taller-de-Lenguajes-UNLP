@@ -35,15 +35,34 @@ def university(path_entrada, path_salida):
         None
     """
 
-    # Abro el archivo correspondiente de lectura y escritura
-    with path_entrada.open("r", newline="") as entrada, path_salida.open("w+", newline="") as salida:
+    with path_entrada.open("r", newline="") as entrada, path_salida.open("w", newline="") as salida:
         new_column = "UNIVERSITARIO"
         reader = csv.DictReader(entrada, delimiter=";")
         columns = reader.fieldnames + [new_column]
         writer = csv.DictWriter(salida, fieldnames=columns, delimiter=";")
         writer.writeheader()
+
         for row in reader:
-            row[new_column] = 2 if int(row["CH06"]) < 18 else (1 if row["NIVEL_ED"] == "6" else 0)
+            # Limpio claves None u otras fuera de columnas
+            keys_to_remove = [key for key in row.keys() if key not in columns or key is None]
+            for key in keys_to_remove:
+                row.pop(key)
+
+            # Manejo el cálculo con control de error para CH06 y NIVEL_ED
+            try:
+                ch06_val = int(row.get("CH06", -1))
+            except (ValueError, TypeError):
+                ch06_val = -1  # valor inválido
+
+            nivel_ed = row.get("NIVEL_ED", "")
+
+            if ch06_val >= 0 and ch06_val < 18:
+                row[new_column] = 2
+            elif nivel_ed == "6":
+                row[new_column] = 1
+            else:
+                row[new_column] = 0
+
             writer.writerow(row)
 
 

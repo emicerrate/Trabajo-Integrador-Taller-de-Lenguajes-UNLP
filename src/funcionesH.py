@@ -34,16 +34,32 @@ def home_type(path_entrada, path_salida):
     with path_entrada.open("r", newline="") as file_in, path_salida.open("w", newline="") as file_out:
         reader = csv.DictReader(file_in, delimiter=";")
         columns = reader.fieldnames + ["TIPO_HOGAR"]
-    # Escribir los datos con la nueva columna
+
         writer = csv.DictWriter(file_out, fieldnames=columns, delimiter=";")
         writer.writeheader()
+
         for row in reader:
-            amount = int(row["IX_TOT"])
-            row["TIPO_HOGAR"] = (
-                "Unipersonal" if amount == 1 else
-                "Nuclear" if 2 <= amount <= 4 else
-                "Extendido"
-            )
+            # Limpio claves None u otras fuera de columnas
+            keys_to_remove = [key for key in row.keys() if key not in columns or key is None]
+            for key in keys_to_remove:
+                row.pop(key)
+
+            # Manejo el valor de IX_TOT con control de errores
+            try:
+                amount = int(row.get("IX_TOT", 0))
+            except (ValueError, TypeError):
+                amount = 0  # o algún valor por defecto
+
+            if amount == 1:
+                tipo = "Unipersonal"
+            elif 2 <= amount <= 4:
+                tipo = "Nuclear"
+            elif amount >= 5:
+                tipo = "Extendido"
+            else:
+                tipo = "Desconocido"
+
+            row["TIPO_HOGAR"] = tipo
             writer.writerow(row)
                         
 def home_density(path_entrada, path_salida):

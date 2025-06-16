@@ -10,7 +10,7 @@ def load_individual_data():
     if not file_path.exists():
         raise FileNotFoundError("No se encontró el archivo procesado: usu_individual_final.csv")
 
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, encoding="latin-1", sep=";")
     required_columns = {"ano4", "trimestre", "estado", "nivel_educativo"}
     if not required_columns.issubset(df.columns):
         missing = required_columns - set(df.columns)
@@ -27,11 +27,11 @@ def filter_by_year_and_quarter(df, year, quarter):
     """
     Filtra el DataFrame por año y trimestre seleccionados.
     """
-    return df[(df["ano4"] == year) & (df["trimestre"] == quarter)]
+    return df[(df["ANO4"] == year) & (df["TRIMESTRE"] == quarter)]
 
 def get_unemployed_by_education(df):
     """
     Devuelve una serie con el conteo de personas desocupadas por nivel educativo.
     """
-    unemployed = df[df["estado"] == "Desocupado"]
-    return unemployed["nivel_educativo"].value_counts().sort_index()
+    unemployed = df[df["CONDICION_LABORAL"] == "Desocupado"]
+    return unemployed["NIVEL_ED_str"].value_counts().sort_index()
