@@ -1,7 +1,7 @@
 import streamlit as st
-from streamlit.st_constantes import DATA_OUT_PATH
+from st_constantes import DATA_OUT_PATH
 
-from streamlit.package.data_graphics.individuos import (
+from package.data_graphics.individuos import (
     load_individual_data,
     get_available_years,
     filter_by_year_and_quarter,
@@ -12,7 +12,7 @@ st.title("(P5) Actividad y empleo")
 st.subheader("1.5.1 Personas desocupadas según estudios alcanzados")
 
 try:
-    df = load_individual_data(DATA_OUT_PATH / "usu_individual_final.csv")
+    df = load_individual_data()
 except (FileNotFoundError, ValueError) as e:
     st.error(str(e))
     st.stop()

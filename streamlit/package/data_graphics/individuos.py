@@ -1,5 +1,5 @@
 import pandas as pd
-from streamlit.st_constantes import DATA_OUT_PATH
+from st_constantes import DATA_OUT_PATH
 
 def load_individual_data():
     """
