@@ -1,8 +1,9 @@
 import streamlit as st
 from st_constantes import DATA_OUT_PATH
+import folium
+from streamlit_folium import st_folium  # para mostrar el mapa en Streamlit
 
 from package.data_graphics.individuos import (
-    get_agglomerate_list,
     agglomeration_id,
     load_individual_data,
     get_available_years,
@@ -10,12 +11,19 @@ from package.data_graphics.individuos import (
     get_unemployed_by_education,
     get_unemployment_rate_over_time,
     get_employment_rate_over_time,
-    get_employment_distribution_by_agglomerate
+    get_employment_distribution_by_agglomerate,
+    get_employment_unemployment_by_agglomerate_extremes
+)
+
+from package.data_graphics.map_utils import (
+    generate_map,
+    add_marker
 )
 
 st.title("Actividad y empleo")
 st.subheader("Personas desocupadas según estudios alcanzados")
 
+# Se Carga el archivo usu_individual_final.csv
 try:
     df = load_individual_data()
 except (FileNotFoundError, ValueError) as e:
@@ -37,7 +45,7 @@ education_counts = get_unemployed_by_education(filtered_df)
 st.markdown("### Gráfico de desocupados por nivel educativo")
 st.bar_chart(education_counts)
 
-# EVOLUCIÓN DEL DESEMPLEO
+# 1.5.2 EVOLUCIÓN DEL DESEMPLEO
 
 # Obtener diccionario de aglomerados
 dict_ag_id = agglomeration_id()
@@ -73,7 +81,7 @@ else:
         use_container_width=True
     )
 
-# EVOLUCIÓN DEL EMPLEO
+# 1.5.3 EVOLUCIÓN DEL EMPLEO
 
 st.markdown("### Evolución de la tasa de empleo")
 
@@ -102,6 +110,8 @@ else:
         use_container_width=True
     )
 
+# 1.5.4 DISTRIBUCION DEL EMPLEO
+
 distribution_df = get_employment_distribution_by_agglomerate(df)
 
 st.markdown("### Distribución del tipo de empleo por aglomerado")
@@ -115,3 +125,39 @@ st.dataframe(
     }),
     height=600  # opcional, para que tenga scroll vertical si es mucha info
 )
+
+# 1.5.5 MAPA DE EMPLEO Y DESEMPLEO
+
+st.markdown("### Tasa de empleo y desempleo por aglomerado")
+
+df_rates = get_employment_unemployment_by_agglomerate_extremes(df)  
+
+# Seleccionar columnas a mostrar
+cols_a_mostrar = ["nombre"] + [col for col in df_rates.columns if col.startswith("tasa_")]
+
+# Renombrar columnas para que se vean más claras
+rename = {
+    col: col.replace("tasa_empleo", "Tasa de Empleo").replace("tasa_desempleo", "Tasa de Desempleo")
+    for col in cols_a_mostrar if col != "nombre"
+}
+
+# Aplicar el renombramiento
+df_formateado = df_rates[cols_a_mostrar].rename(columns=rename)
+
+# Mostrar DataFrame con formato de porcentaje
+st.dataframe(
+    df_formateado.style.format(
+        {col: "{:.2f}%" for col in df_formateado.columns if col != "nombre"}
+    ),
+    height=600
+)
+
+st.markdown("### Mapa de tasa de empleo y desempleo por aglomerado")
+
+selected_rate = st.selectbox("Elige la tasa a visualizar:", ["empleo", "desempleo"])
+
+map = generate_map()
+
+df_rates.apply(lambda row: add_marker(row, map, selected_rate), axis=1)
+
+st_folium(map, width=700, height=500)
