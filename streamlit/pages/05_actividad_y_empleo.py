@@ -2,6 +2,7 @@ import streamlit as st
 from st_constantes import DATA_OUT_PATH
 import folium
 from streamlit_folium import st_folium  # para mostrar el mapa en Streamlit
+import matplotlib.pyplot as plt
 
 from package.data_graphics.individuos import (
     agglomeration_id,
@@ -20,6 +21,7 @@ from package.data_graphics.map_utils import (
     add_marker
 )
 
+
 st.title("Actividad y empleo")
 st.subheader("Personas desocupadas según estudios alcanzados")
 
@@ -30,6 +32,9 @@ except (FileNotFoundError, ValueError) as e:
     st.error(str(e))
     st.stop()
 
+#PARA VER QUE CONTIENE st
+#st.dataframe(df[["AGLOMERADO", "ANO4", "TRIMESTRE", "CONDICION_LABORAL"]].drop_duplicates())
+
 available_years = get_available_years(df)
 selected_year = st.selectbox("Año", available_years, index=len(available_years) - 1)
 selected_quarter = st.selectbox("Trimestre", [1, 2, 3, 4])
@@ -38,12 +43,36 @@ filtered_df = filter_by_year_and_quarter(df, selected_year, selected_quarter)
 
 if filtered_df.empty:
     st.warning(f"No hay datos para el {selected_quarter}° trimestre de {selected_year}.")
-    st.stop()
 
 education_counts = get_unemployed_by_education(filtered_df)
 
 st.markdown("### Gráfico de desocupados por nivel educativo")
-st.bar_chart(education_counts)
+
+# Crear figura y ejes
+fig, ax = plt.subplots(figsize=(10, 5))
+
+# COlor de fondo
+fig.patch.set_facecolor('#1D2B44')
+ax.set_facecolor('#1D2B44')
+
+# Color de las barras
+ax.bar(education_counts.index, education_counts.values, color='#E44336')
+
+# Títulos y etiquetas (texto blanco brillante)
+ax.set_title("Personas desocupadas por nivel educativo", fontsize=14, color='#FFFFFF')
+ax.set_xlabel("Nivel educativo", fontsize=12, color='#FFFFFF')
+ax.set_ylabel("Cantidad", fontsize=12, color='#FFFFFF')
+
+# Ejes
+ax.tick_params(axis='x', labelrotation=45, colors='#FFFFFF')
+ax.tick_params(axis='y', colors='#FFFFFF')
+
+# Bordes en blanco 
+for spine in ax.spines.values():
+    spine.set_edgecolor('#FFFFFF')
+
+# Mostrar en Streamlit
+st.pyplot(fig)
 
 # 1.5.2 EVOLUCIÓN DEL DESEMPLEO
 
@@ -68,19 +97,40 @@ selected_agglomerate_name = st.selectbox("Aglomerado", agglomerates)
 if selected_agglomerate_name == "Todo el país":
     selected_agglomerate = "Todo el país"
 else:
-    selected_agglomerate = dict_name_to_id[selected_agglomerate_name]
+    selected_agglomerate = int(dict_name_to_id[selected_agglomerate_name])
 
 # Obtener la evolución de la tasa de desempleo
+
 unemployment_df = get_unemployment_rate_over_time(df, selected_agglomerate)
 
 if unemployment_df.empty:
     st.warning("No hay datos disponibles para la selección.")
 else:
-    st.line_chart(
-        unemployment_df.set_index("periodo")["tasa_desempleo"],
-        use_container_width=True
-    )
+    fig, ax = plt.subplots(figsize=(10, 5))
 
+    # Fondo
+    fig.patch.set_facecolor('#1D2B44')
+    ax.set_facecolor('#1D2B44')
+
+    # Línea de tasa de desempleo
+    ax.plot(unemployment_df["periodo"], unemployment_df["tasa_desempleo"],
+            color="#E44336", linewidth=2)
+
+    # Títulos y etiquetas
+    ax.set_title("Evolución de la tasa de desempleo", fontsize=14, color='white')
+    ax.set_xlabel("Periodo", fontsize=12, color='white')
+    ax.set_ylabel("Tasa de desempleo (%)", fontsize=12, color='white')
+
+    # Ejes
+    ax.tick_params(axis='x', labelrotation=45, colors='white')
+    ax.tick_params(axis='y', colors='white')
+
+    # Bordes del gráfico
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white')
+
+    st.pyplot(fig)
+    
 # 1.5.3 EVOLUCIÓN DEL EMPLEO
 
 st.markdown("### Evolución de la tasa de empleo")
@@ -97,7 +147,7 @@ selected_agglomerate_name2 = st.selectbox("Aglomerado", agglomerates, key="emp_a
 if selected_agglomerate_name2 == "Todo el país":
     selected_agglomerate2 = "Todo el país"
 else:
-    selected_agglomerate2 = dict_name_to_id[selected_agglomerate_name2]
+    selected_agglomerate2 = int(dict_name_to_id[selected_agglomerate_name2])
 
 # Obtener la evolución de la tasa de empleo
 employment_df = get_employment_rate_over_time(df, selected_agglomerate2)
@@ -105,10 +155,30 @@ employment_df = get_employment_rate_over_time(df, selected_agglomerate2)
 if employment_df.empty:
     st.warning("No hay datos disponibles para la selección.")
 else:
-    st.line_chart(
-        employment_df.set_index("periodo")["tasa_empleo"],
-        use_container_width=True
-    )
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    # Fondo
+    fig.patch.set_facecolor('#1D2B44')
+    ax.set_facecolor('#1D2B44')
+
+    # Línea de tasa de empleo
+    ax.plot(employment_df["periodo"], employment_df["tasa_empleo"],
+            color="#E44336", linewidth=2)
+
+    # Títulos y etiquetas
+    ax.set_title("Evolución de la tasa de empleo", fontsize=14, color='white')
+    ax.set_xlabel("Periodo", fontsize=12, color='white')
+    ax.set_ylabel("Tasa de empleo (%)", fontsize=12, color='white')
+
+    # Ejes
+    ax.tick_params(axis='x', labelrotation=45, colors='white')
+    ax.tick_params(axis='y', colors='white')
+
+    # Bordes del gráfico
+    for spine in ax.spines.values():
+        spine.set_edgecolor('white')
+
+    st.pyplot(fig)
 
 # 1.5.4 DISTRIBUCION DEL EMPLEO
 
@@ -120,8 +190,6 @@ selected_quarter2 = st.selectbox("Trimestre", [1, 2, 3, 4], key="selected_quarte
 
 
 distribution_df = get_employment_distribution_by_agglomerate(df, selected_year2, selected_quarter2)
-
-
 
 st.dataframe(
     distribution_df.style.format({
