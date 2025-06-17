@@ -112,9 +112,16 @@ else:
 
 # 1.5.4 DISTRIBUCION DEL EMPLEO
 
-distribution_df = get_employment_distribution_by_agglomerate(df)
-
 st.markdown("### Distribución del tipo de empleo por aglomerado")
+
+# Selector año y trimestre (por nombre, con otra clave)
+selected_year2 = st.selectbox("Año", available_years, index=len(available_years) - 1, key="selected_year_2")
+selected_quarter2 = st.selectbox("Trimestre", [1, 2, 3, 4], key="selected_quarter_2")
+
+
+distribution_df = get_employment_distribution_by_agglomerate(df, selected_year2, selected_quarter2)
+
+
 
 st.dataframe(
     distribution_df.style.format({
@@ -156,6 +163,7 @@ st.markdown("### Mapa de tasa de empleo y desempleo por aglomerado")
 
 selected_rate = st.selectbox("Elige la tasa a visualizar:", ["empleo", "desempleo"])
 
+# Se genera el mapa
 map = generate_map()
 
 df_rates.apply(lambda row: add_marker(row, map, selected_rate), axis=1)

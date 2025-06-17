@@ -167,8 +167,11 @@ def get_employment_rate_over_time(df, selected_agglomerate):
 
     return grouped[["periodo", "tasa_empleo"]].sort_values("periodo")
 
-def get_employment_distribution_by_agglomerate(df):
+def get_employment_distribution_by_agglomerate(df, selected_year2, selected_quarter2):
     dict_ag_id = agglomeration_id()
+
+    # Filtrar por año y trimestre seleccionados
+    df = df[(df["ANO4"] == selected_year2) & (df["TRIMESTRE"] == selected_quarter2)]
 
     # Filtrar solo ocupados
     ocupy = df[df["CONDICION_LABORAL"].isin(["Ocupado dependiente", "Ocupado autónomo"])]
