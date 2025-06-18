@@ -65,21 +65,32 @@ def load_agglomerate_geodata():
     return pd.DataFrame(records)
 
 # FUNCIONES PARA PAGINA 5
-
-def load_individual_data():
+def load_individual_data_05():
     """
-    Carga el archivo de datos individuales y verifica columnas necesarias.
+    Carga solo las columnas necesarias del archivo de datos individuales.
     """
     file_path = DATA_OUT_PATH / "usu_individual_final.csv"
 
     if not file_path.exists():
         raise FileNotFoundError("No se encontró el archivo procesado: usu_individual_final.csv")
 
-    df = pd.read_csv(file_path, encoding="latin-1", sep=";")
-    required_columns = {"ANO4", "TRIMESTRE", "CONDICION_LABORAL", "NIVEL_ED_str"}
-    if not required_columns.issubset(df.columns):
-        missing = required_columns - set(df.columns)
-        raise ValueError(f"Faltan columnas necesarias: {missing}")
+    columnas_utilizadas = [
+        "ANO4",
+        "TRIMESTRE",
+        "CONDICION_LABORAL",
+        "NIVEL_ED_str",
+        "PONDERA",
+        "AGLOMERADO",
+        "PP04A"
+    ]
+
+    df = pd.read_csv(
+        file_path,
+        encoding="latin-1",
+        sep=";",
+        usecols=columnas_utilizadas,
+        low_memory=False
+    )
     return df
 
 def get_available_years(df):
