@@ -99,6 +99,11 @@ def get_available_years(df):
     """
     return sorted(df["ANO4"].unique())
 
+def get_available_quarters(df, year):
+    """Devuelve los trimestres disponibles para determinado año"""
+    dff = df[df.ANO4==year]
+    return sorted(dff["TRIMESTRE"].unique())
+
 def filter_by_year_and_quarter(df, year, quarter):
     """
     Filtra el DataFrame por año y trimestre seleccionados.
