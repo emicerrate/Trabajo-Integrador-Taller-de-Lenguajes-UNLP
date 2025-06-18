@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from st_constantes import DATA_OUT_PATH, DATA_PATH
 
-def load_hogar_data():
+def load_hogar_data_07():
     """
     Carga el archivo de datos individuales y verifica columnas necesarias.
     """
@@ -10,8 +10,21 @@ def load_hogar_data():
 
     if not file_path.exists():
         raise FileNotFoundError("No se encontró el archivo: usu_hogar_final.csv")
+    
+    columns_needed = [
+        "ANO4",
+        "TRIMESTRE",
+        "IX_TOT",
+        "ITF",
+        "PONDERA"
+    ]
 
-    df = pd.read_csv(file_path, encoding="latin-1", sep=";")
+    df = pd.read_csv(
+        file_path, 
+        encoding="latin-1", 
+        sep=";",
+        usecols=columns_needed,
+        low_memory=False)
     
     return df
 
@@ -27,18 +40,22 @@ def load_basket_data():
     df = pd.read_csv(file_path, encoding="latin-1", sep=",")
     return df
 
-def basket_cost_per_quarter(df_basket, year, quarter):
+def poverty_indigence_lines_per_quarter(df_basket, year, quarter):
     min_date = datetime(year, 3*quarter - 2, 1)
     max_date = datetime(year, 3*quarter, 30)
     df_basket["indice_tiempo"] = pd.to_datetime(df_basket["indice_tiempo"])
     df_basket_filtered = df_basket[(df_basket.indice_tiempo>=min_date) & (df_basket.indice_tiempo<max_date)]
-    return df_basket_filtered["canasta_basica_alimentaria"]
+    average_poverty_line = df_basket_filtered["linea_pobreza"].mean()
+    average_indigence_line = df_basket_filtered["linea_indigencia"].mean()
+    return average_poverty_line, average_indigence_line
     
 
-def homes_under_poverty_indigence(homes, basket):
-    homes_filtered = homes[homes["IX_TOT"]=="4"]
-    homes_quantity = homes_filtered.count()
-    under_poverty_quantity = homes_filtered[homes_filtered]
+def homes_under_poverty_indigence(homes, p_line, i_line):
+    homes_filtered = homes[homes["IX_TOT"]==4]
+    homes_quantity = homes_filtered["PONDERA"].sum()
+    under_poverty_quantity = homes_filtered.PONDERA[homes_filtered["ITF"]<p_line].sum()
+    under_indigence_quantity = homes_filtered.PONDERA[homes_filtered["ITF"]<i_line].sum()
+    return under_poverty_quantity, under_indigence_quantity, homes_quantity
 
 def agglomeration_id():
     dict_ag_id = {
