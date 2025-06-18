@@ -28,10 +28,9 @@ def load_basket_data():
     return df
 
 def basket_cost_per_quarter(df_basket, year, quarter):
-    format = "%Y-%m-%d"
     min_date = datetime(year, 3*quarter - 2, 1)
     max_date = datetime(year, 3*quarter, 30)
-    df_basket["indice_tiempo"] = pd.to_datetime(df_basket["indice_tiempo"], format)
+    df_basket["indice_tiempo"] = pd.to_datetime(df_basket["indice_tiempo"])
     df_basket_filtered = df_basket[(df_basket.indice_tiempo>=min_date) & (df_basket.indice_tiempo<max_date)]
     return df_basket_filtered["canasta_basica_alimentaria"]
     
