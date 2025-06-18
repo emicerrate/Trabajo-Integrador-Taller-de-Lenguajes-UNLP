@@ -105,32 +105,47 @@ def get_available_years(df):
 
 # Calculo el total de viviendas 
 def get_total_houses(df):
-    return df["CODUSU"].nunique()
+    return df["PONDERA"].sum()
 
 # Calculo cuantas viviendas hay por tipo
 def get_housing_type_distribution(df):
-    return df["IV1"].value_counts()
+    return df.groupby("IV1")["PONDERA"].sum().sort_values(ascending=False)
 
 # Agrupo por aglomerado y calculo el material predominante en pisos
 def get_floor_material_by_agglomerate(df):
     
-    dict_ag_id = agglomeration_id()
+    FLOOR_MATERIAL = {
+        1: "mosaico / baldosa / madera /cerámica / alfombra",
+        2: "cemento / ladrillo jo",
+        3: "ladrillo suelto / tierra"
+    }
 
-    aglomerados = []
+    dict_ag_id = agglomeration_id()
+    
+    resultados = []
 
     for aglo_id, grupo in df.groupby("AGLOMERADO"):
-        nombre_aglo = dict_ag_id.get(str(aglo_id), f"Aglom {aglo_id}")
-        if grupo["IV3"].mode().empty:
-            material = "Sin datos"
-        else:
-            material = grupo["IV3"].mode().iloc[0]
+        nombre_aglo = dict_ag_id.get(str(aglo_id), f"Aglomerado {aglo_id}")
 
-        aglomerados.append({
+        if grupo.empty or "PONDERA" not in grupo.columns:
+            resultados.append({"Aglomerado": nombre_aglo, "Material Predominante": "Sin datos"})
+            continue
+
+        # Agrupar por material y sumar ponderación
+        ponderado = grupo.groupby("IV3")["PONDERA"].sum()
+
+        if ponderado.empty:
+            material_nombre = "Sin datos"
+        else:
+            cod_material = ponderado.idxmax()
+            material_nombre = FLOOR_MATERIAL.get(cod_material, f"Material {cod_material}")
+
+        resultados.append({
             "Aglomerado": nombre_aglo,
-            "Material Predominante": material
+            "Material Predominante": material_nombre
         })
 
-    return pd.DataFrame(aglomerados)
+    return pd.DataFrame(resultados)
 
 # Calculo el porcentaje de viviendas con baño dentro del hogar por aglomerado
 def get_bathroom_access_by_agglomerate(df):
@@ -139,14 +154,12 @@ def get_bathroom_access_by_agglomerate(df):
     df = df.copy()
     df["TIENE_BANO"] = df["IV9"] == 1
 
-    porcentajes = df.groupby("AGLOMERADO")["TIENE_BANO"].mean() * 100
+    grouped = df.groupby("AGLOMERADO").apply(
+        lambda g: (g.loc[g["TIENE_BANO"], "PONDERA"].sum() / g["PONDERA"].sum()) * 100
+    ).reset_index(name="Porcentaje con baño (%)")
 
-    porcentajes.index = porcentajes.index.astype(str).map(dict_ag_id)
-
-    result = porcentajes.reset_index()
-    result.columns = ["AGLOMERADO", "Porcentaje con baño (%)"]
-
-    return result.round(2)
+    grouped["Aglomerado"] = grouped["AGLOMERADO"].astype(str).map(dict_ag_id)
+    return grouped[["Aglomerado", "Porcentaje con baño (%)"]].round(2)
 
 # Calculo cuantas viviendas estan en villas de emergencia por aglomerado
 def get_villas_by_agglomerate(df):
@@ -155,14 +168,14 @@ def get_villas_by_agglomerate(df):
 
     for aglo_id, grupo in df.groupby("AGLOMERADO"):
         nombre = dict_ag_id.get(str(aglo_id), f"Aglom {aglo_id}")
-        total = len(grupo)
-        en_villa = (grupo["IV12_3"] == 1).sum()  
+        total = grupo["PONDERA"].sum()
+        en_villa = grupo.loc[grupo["IV12_3"] == 1, "PONDERA"].sum()
         porcentaje = round((en_villa / total) * 100, 2) if total > 0 else 0.0
 
         resultados.append({
             "Aglomerado": nombre,
-            "Total": total,
             "Cantidad en Villas": en_villa,
+            "Total": total,
             "Porcentaje": porcentaje
         })
 
@@ -171,9 +184,51 @@ def get_villas_by_agglomerate(df):
 # Calculo las condiciones de habitabilidad por aglomerado
 def get_habitability_by_agglomerate(df):
     dict_ag_id = agglomeration_id()
-    grouped = df.groupby(["AGLOMERADO", "CONDICION_DE_HABITABILIDAD"]).size().reset_index(name="Cantidad") 
-    totales = grouped.groupby("AGLOMERADO")["Cantidad"].sum()
-    grouped["Total"] = grouped["AGLOMERADO"].map(totales)
-    grouped["Porcentaje"] = ((grouped["Cantidad"] / grouped["Total"]) * 100).round(2)
+    grouped = df.groupby(["AGLOMERADO", "CONDICION_DE_HABITABILIDAD"])["PONDERA"].sum().reset_index(name="Cantidad")
+
+    total_por_aglo = grouped.groupby("AGLOMERADO")["Cantidad"].sum()
+    grouped["Total"] = grouped["AGLOMERADO"].map(total_por_aglo)
+    grouped["Porcentaje"] = (grouped["Cantidad"] / grouped["Total"] * 100).round(2)
+
     grouped["Aglomerado"] = grouped["AGLOMERADO"].astype(str).map(dict_ag_id)
-    return grouped[["Aglomerado", "CONDICION_DE_HABITABILIDAD", "Cantidad", "Porcentaje"]]     
+
+    return grouped[["Aglomerado", "CONDICION_DE_HABITABILIDAD", "Cantidad", "Porcentaje"]]
+
+def get_tenure_evolution_by_agglomerate(df, agglomerate, tenencias):
+    from package.data_graphics.individuos import agglomeration_id
+
+def get_tenure_evolution_named(df, agglomerate, selected_labels):
+
+    # Diccionario oficial de códigos a nombres
+    TENENCIA_LABELS = {
+        1: "Propietario vivienda y terreno",
+        2: "Propietario vivienda solo",
+        3: "Inquilino / arrendatario",
+        4: "Ocupante por impuestos/expensas",
+        5: "Ocupante en relación laboral",
+        6: "Ocupante con permiso",
+        7: "Ocupante sin permiso",
+        8: "Está en sucesión"
+    }
+
+    # Invertir el diccionario 
+    label_to_code = {v: k for k, v in TENENCIA_LABELS.items()}
+
+    # Filtrar por aglomerado y tenencias seleccionadas
+    codigos_seleccionados = [label_to_code[label] for label in selected_labels if label in label_to_code]
+    df_filtrado = df[(df["AGLOMERADO"] == agglomerate) & (df["II7"].isin(codigos_seleccionados))]
+
+    # Agrupar y sumar ponderaciones
+    agrupado = df_filtrado.groupby(["ANO4", "TRIMESTRE", "II7"])["PONDERA"].sum().reset_index()
+
+    # Reemplazo codigo por nombres
+    agrupado["II7"] = agrupado["II7"].map(TENENCIA_LABELS)
+
+    pivot = agrupado.pivot_table(
+        index=["ANO4", "TRIMESTRE"],
+        columns="II7",
+        values="PONDERA",
+        fill_value=0
+    ).reset_index()
+
+    return pivot  
