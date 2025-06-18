@@ -271,3 +271,66 @@ def get_employment_unemployment_by_agglomerate_extremes(df):
     table["lon"] = table["AGLOMERADO"].map(lon_map)
 
     return table
+
+# FUNCIONES PARA PÁGINA 2
+def load_individual_data_02():
+    """
+    Carga solo las columnas necesarias del archivo de datos individuales para la página 2.
+    Args:
+        None.
+    Returns:
+        df (dataframe): Dataframe con las columnas necesarias para la página 2. 
+    """
+    file_path = DATA_OUT_PATH / "usu_individual_final.csv"
+
+    if not file_path.exists():
+        raise FileNotFoundError("No se encontró el archivo procesado: usu_individual_final.csv")
+
+    columnas_utilizadas = [
+        "ANO4",
+        "TRIMESTRE",
+        "CONDICION_LABORAL",
+        "NIVEL_ED_str",
+        "PONDERA",
+        "AGLOMERADO",
+        "PP04A"
+    ]
+
+    df = pd.read_csv(file_path, encoding="latin-1", sep=";", low_memory=False)
+    return df
+
+def media_and_median_last_quarter(df):
+    """
+    Calcula para cada trimestre cargado la media y la mediana de su edad.
+    Args:
+        df (dataframe): Dataframe con la información de las personas.
+    Returns:
+        grouped_df (dataframe): Dataframe agrupado por año y trimestre con la media y mediana de edad para cada trimestre.
+    """
+    grouped_df = df.groupby(["ANO4", "TRIMESTRE"])["CH06"].agg(MEDIA="mean", MEDIANA="median").reset_index()
+    grouped_df.rename(columns={"ANO4": "AÑO"}, inplace=True)
+    return grouped_df
+
+def age_media_per_conglomerate(df):
+    """
+    Calcula el promedio de edad por aglomerado para el último trimestre cargado.
+    Args:
+        df (dataframe): Dataframe con la información de las personas.
+    Returns:
+        grouped_df (dataframe): Dataframe agrupado por aglomerado y con el promedio de edad para cada uno.
+    """
+    dict_ag_id = agglomeration_id()
+    max_year = max(get_available_years(df))
+    max_quarter = max(get_available_quarters(df, max_year))
+
+    # Filtro el dataframe para el último año y trimestre
+    df_last_quarter = df[(df["ANO4"]==max_year) & (df["TRIMESTRE"]==max_quarter)]
+
+    # Agrupo el dataframe por aglomerado y le calculo el promedio de edad para cada uno
+    grouped_df = df_last_quarter.groupby("AGLOMERADO")["CH06"].agg(PROMEDIO="mean").reset_index()
+    
+    # Renombro la columna del promedio y para cada aglomerado pongo su nombre
+    grouped_df.rename(columns={"PROMEDIO": "PROMEDIO DE EDAD"}, inplace=True)
+    grouped_df["AGLOMERADO"] = grouped_df["AGLOMERADO"].astype(str).map(dict_ag_id)
+
+    return grouped_df
