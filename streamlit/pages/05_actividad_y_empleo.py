@@ -22,7 +22,6 @@ from package.data_graphics.map_utils import (
 )
 
 st.title("Actividad y empleo")
-st.subheader("Personas desocupadas según estudios alcanzados")
 
 # Se Carga el archivo usu_individual_final.csv con las columnas necesarias para las funcionalidades de esta pagina
 try:
@@ -36,6 +35,13 @@ except (FileNotFoundError, ValueError) as e:
 #st.write(df.dtypes[[102, 169, 177]])
 
 available_years = get_available_years(df)
+
+st.markdown("""
+### Personas desocupadas según estudios alcanzados
+Se informa el nivel educativo de los desocupados. 
+Elegir año y trimestre, se evalúa para todo el país.
+""")
+
 selected_year = st.selectbox("Año", available_years, index=len(available_years) - 1)
 selected_quarter = st.selectbox("Trimestre", [1, 2, 3, 4])
 
@@ -46,7 +52,7 @@ if filtered_df.empty:
 
 education_counts = get_unemployed_by_education(filtered_df)
 
-st.markdown("### Gráfico de desocupados por nivel educativo")
+st.markdown(" ### Gráfico de desocupados por nivel educativo")
 
 # Crear figura y ejes
 fig, ax = plt.subplots(figsize=(10, 5))
@@ -83,12 +89,11 @@ dict_name_to_id = {v: k for k, v in dict_ag_id.items()}
 # Lista de aglomerados con nombres
 agglomerates = ["Todo el país"] + sorted(dict_name_to_id.keys())
 
-st.markdown("### Evolución tasa de desempleo")
-
-"""
-Se informa la evolución del desempleo (tasa de empleo) a lo largo del tiempo. 
+st.markdown("""
+### Evolución tasa de desempleo
+Se informa la evolución del desempleo (tasa de desempleo) a lo largo del tiempo. 
 Elegir aglomerado o para todo el país.
-"""
+""")
 
 # Selector de aglomerado (por nombre)
 selected_agglomerate_name = st.selectbox("Aglomerado", agglomerates)
@@ -133,12 +138,11 @@ else:
     
 # 1.5.3 EVOLUCIÓN DEL EMPLEO
 
-st.markdown("### Evolución de la tasa de empleo")
-
-"""
+st.markdown("""
+### Evolución de la tasa de empleo
 Se informa la evolución del empleo (tasa de empleo) a lo largo del tiempo. 
 Elegir aglomerado o para todo el país.
-"""
+""")
 
 # Segundo selector (por nombre, con otra clave)
 selected_agglomerate_name2 = st.selectbox("Aglomerado", agglomerates, key="emp_agglom")
@@ -182,7 +186,11 @@ else:
 
 # 1.5.4 DISTRIBUCION DEL EMPLEO
 
-st.markdown("### Distribución del tipo de empleo por aglomerado")
+st.markdown("""
+### Distribución del tipo de empleo por aglomerado
+Se informa para cada aglomerado el total de personas ocupadas, el porcentaje con empleo estatal, el porcentaje con empleo privado y el porcentaje de otro tipo. 
+Elegir año y trimestre:
+""")
 
 # Selector año y trimestre (por nombre, con otra clave)
 selected_year2 = st.selectbox("Año", available_years, index=len(available_years) - 1, key="selected_year_2")
@@ -229,7 +237,15 @@ df_rates = get_employment_unemployment_by_agglomerate_extremes(df)
 #    height=600
 #)
 
-st.markdown("### Mapa de tasa de empleo y desempleo por aglomerado")
+st.markdown("""
+### Mapa de la evolución de  la tasa de empleo y desempleo por aglomerado
+
+Este mapa interactivo permite visualizar cómo evolucionaron las tasas de empleo o desempleo en cada aglomerado urbano del país entre el primer y el último período disponible en la base de datos.  
+Al seleccionar el tipo de tasa que desea analizar, el mapa marcará con **puntos verdes** los aglomerados donde la situación **mejoró con el tiempo** y con **puntos rojos** aquellos donde **empeoró**.
+
+- Si elige ver la **tasa de empleo**, el color verde indica un aumento del empleo y el rojo una disminución.  
+- Si selecciona la **tasa de desempleo**, el verde representa una reducción del desempleo y el rojo un aumento.
+""")
 
 selected_rate = st.selectbox("Elige la tasa a visualizar:", ["empleo", "desempleo"])
 
