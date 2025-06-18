@@ -21,7 +21,14 @@ from package.data_graphics.map_utils import (
     add_marker
 )
 
-st.title("Actividad y empleo")
+st.title("💼 Actividad y empleo 🛠️")
+
+st.subheader("Explorá **indicadores clave del mercado laboral argentino**.")
+
+st.markdown("""
+ 
+Visualizá la evolución del empleo y el desempleo según 📅 período, 🏙️ aglomerado y 🎓 nivel educativo, con gráficos y mapas interactivos.
+""")
 
 # Se Carga el archivo usu_individual_final.csv con las columnas necesarias para las funcionalidades de esta pagina
 try:
