@@ -1,13 +1,16 @@
 import streamlit as st
 from st_constantes import DATA_OUT_PATH
 import matplotlib.pyplot as plt
+import numpy as np
 from package.data_graphics.individuos import (
     get_available_years,
     load_individual_data_02,
     media_and_median_last_quarter,
     age_media_per_conglomerate,
     agglomeration_id,
-    demography_dependency
+    demography_dependency,
+    filter_by_year_and_quarter,
+    distribution_per_age_and_gender
 )
 from package.data_graphics.funcionesA import data_dates
 
@@ -26,21 +29,57 @@ id_to_name_conglomerates = agglomeration_id()
 name_to_id_conglomerates = {name: id for id, name in id_to_name_conglomerates.items()}
 sorted_conglomerates = sorted(name_to_id_conglomerates)
 
-# # 1.3.1 Distribución de la población por edad y sexo
-# st.subheader("Distribución de la población por edad y sexo")
-# year = st.text_input("Año:")
-# quarter = st.slider("Trimestre:", value=1, min_value=1, max_value=4, step=1)
-# if year:
-#     try:
-#         year_int = int(year)
-#         if year_int not in available_years:
-#             st.warning("No hay datos disponibles para el año ingresado.")
-#         else:
-#             filtered_df = filter_by_year_and_quarter(df, year_int, quarter)
-#             if filtered_df.empty:
-#                  st.warning(f"No hay datos para el {quarter}° trimestre de {year}.")
-#     except ValueError:
-#         st.warning("El año ingresado es inválido. Por favor, vuelva a intentarlo.")
+# 1.3.1 Distribución de la población por edad y sexo
+st.subheader("Distribución de la población por edad y sexo")
+year = st.text_input("Año:")
+quarter = st.slider("Trimestre:", value=1, min_value=1, max_value=4, step=1)
+if year:
+    try:
+        year_int = int(year)
+        if year_int not in available_years:
+            st.warning("No hay datos disponibles para el año ingresado.")
+        else:
+            filtered_df = filter_by_year_and_quarter(df, year_int, quarter)
+            if filtered_df.empty:
+                st.warning(f"No hay datos para el {quarter}° trimestre de {year}.")
+            else:
+                df_distribution_per_age_and_gender = distribution_per_age_and_gender(filtered_df)
+                
+                # Datos para el gráfico
+                labels = df_distribution_per_age_and_gender.index # Obtiene las etiquetas de los grupos de edad
+                male_count = df_distribution_per_age_and_gender["MASCULINO"]
+                female_count = df_distribution_per_age_and_gender["FEMENINO"]
+
+                # Medidas para el gráfico
+                x = np.arange(len(labels)) # Genera las posiciones en el eje x para las barras
+                width = 0.4
+                
+                # Hacemos el gráfico de barras dobles para mostrar la distribución
+                fig, ax = plt.subplots(figsize=(10,6))
+
+                # Fondo
+                fig.patch.set_facecolor('#1D2B44')
+                ax.set_facecolor('#1D2B44')
+
+                # Configuración de barras para masculino y femenino
+                ax.bar(x - width/2, male_count, width, label="MASCULINO", color="#E44336")
+                ax.bar(x + width/2, female_count, width, label="FEMENINO", color="#FF8A65")
+
+                # Título, etiquetas, ejes y bordes
+                ax.set_title(f"Distribución de la población por edad y sexo para el {quarter}° trimestre del año {year}", fontsize=14, color="white")
+                ax.set_ylabel("Cantidad de personas", fontsize=14, color="white")
+                ax.set_xlabel("Grupo etario", fontsize=14, color="white")
+                ax.set_xticks(x)
+                ax.set_xticklabels(labels, rotation=45, ha="right", color="white") # Rota los nombres de los grupos etarios
+                ax.legend() # Agrega la leyenda para distinguir masculino de femenino
+                for spine in ax.spines.values():
+                    spine.set_edgecolor('white')
+                ax.tick_params(axis='y', colors='white')
+                fig.tight_layout()
+
+                st.pyplot(fig)
+    except ValueError:
+        st.warning("El año ingresado es inválido. Por favor, vuelva a intentarlo.")
 
 
 # 1.3.2 Edad promedio último trimestre

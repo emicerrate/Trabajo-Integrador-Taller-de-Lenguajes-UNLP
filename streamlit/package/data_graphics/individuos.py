@@ -362,3 +362,20 @@ def demography_dependency(df, conglomerate):
     grouped_df["PERÍODO"] = grouped_df["ANO4"].astype(str) + "-T" + grouped_df["TRIMESTRE"].astype(str)
     grouped_df.rename(columns={"ANO4": "AÑO"}, inplace=True)
     return grouped_df
+
+def distribution_per_age_and_gender(df):
+    """
+    Agrupa a las personas por sexo y edad en grupos de cada 10 años.
+    Args:
+        df (dataframe): Dataframe con la información de las personas.
+    Returns:
+        grouped_df (dataframe): Dataframe agrupado por los rangos etarios y por sexo donde para cada uno se informa la cantidad.
+    """
+    df = df[df["CH06"].between(0, 150)] # Elimino las edades inválidas
+    bins = [i for i in range(0, 101, 10)]
+    labels = [f"{i}-{i+9}" for i in range(0, 100, 10)]
+    df["GRUPO EDAD"] = pd.cut(df["CH06"], bins=bins, labels=labels, right=False)
+    sorted_df = df.sort_values(by=["CH04", "CH06"])
+    grouped_df = sorted_df.groupby(["GRUPO EDAD", "CH04"]).size().unstack(fill_value=0)
+    grouped_df.columns = ["MASCULINO", "FEMENINO"]
+    return grouped_df
