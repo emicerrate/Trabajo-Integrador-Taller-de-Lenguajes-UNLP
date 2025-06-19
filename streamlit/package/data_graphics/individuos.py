@@ -343,7 +343,7 @@ def calculate_dp(group):
     Returns:
         float: Valor de la dependencia demográfica para el trimestre.
     """
-    inactive = group[(group["CH06"]<=14) | (group["CH06"]>=65)].shape[0]
+    inactive = group[(group["CH06"]<=14) | (group["CAT_INAC"]==1)].shape[0]
     active = group[group["CH06"].between(15, 64)].shape[0]
     return 100 * (inactive/active)
 
