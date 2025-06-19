@@ -83,6 +83,7 @@ if year:
                 ax.set_xlabel("Grupo etario", fontsize=14, color="white")
                 ax.set_xticks(x)
                 ax.set_xticklabels(labels, rotation=45, ha="right", color="white") # Rota los nombres de los grupos etarios
+                ax.ticklabel_format(axis="y", style="plain")
                 ax.legend() # Agrega la leyenda para distinguir masculino de femenino
                 for spine in ax.spines.values():
                     spine.set_edgecolor('white')
