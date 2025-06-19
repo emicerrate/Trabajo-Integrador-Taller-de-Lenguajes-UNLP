@@ -5,7 +5,7 @@ import numpy as np
 from package.data_graphics.individuos import (
     get_available_years,
     load_individual_data_02,
-    media_and_median_last_quarter,
+    media_and_median,
     age_media_per_conglomerate,
     agglomeration_id,
     demography_dependency,
@@ -142,5 +142,5 @@ st.subheader("Media y mediana de la edad para cada año y trimestre")
 st.markdown("""
     Calcula para cada trimestre almacenado la media y la mediana de edad de la población.
 """)
-df_media_and_median_last_quarter = media_and_median_last_quarter(df)
-st.dataframe(df_media_and_median_last_quarter.style.format({"MEDIA": "{:.2f}", "MEDIANA": "{:,.0f}"}), hide_index=True, width=500)
+df_media_and_median = media_and_median(df)
+st.dataframe(df_media_and_median.style.format({"MEDIA": "{:.2f}", "MEDIANA": "{:,.0f}"}), hide_index=True, width=500)

@@ -299,7 +299,7 @@ def load_individual_data_02():
     df = pd.read_csv(file_path, encoding="latin-1", sep=";", low_memory=False)
     return df
 
-def media_and_median_last_quarter(df):
+def media_and_median(df):
     """
     Calcula para cada trimestre cargado la media y la mediana de su edad.
     Args:
@@ -307,9 +307,12 @@ def media_and_median_last_quarter(df):
     Returns:
         grouped_df (dataframe): Dataframe agrupado por año y trimestre con la media y mediana de edad para cada trimestre.
     """
-    grouped_df = df.groupby(["ANO4", "TRIMESTRE"])["CH06"].agg(MEDIA="mean", MEDIANA="median").reset_index()
-    grouped_df.rename(columns={"ANO4": "AÑO"}, inplace=True)
-    return grouped_df
+    grouped_df = df.groupby(["ANO4", "TRIMESTRE"])
+    media = grouped_df.apply(lambda x: (x["CH06"] * x["PONDERA"]).sum() / x["PONDERA"].sum()).reset_index(name="MEDIA")
+    median = grouped_df["CH06"].median().reset_index(name="MEDIANA")
+    result_df = pd.merge(media, median, on=["ANO4", "TRIMESTRE"])
+    result_df.rename(columns={"ANO4": "AÑO"}, inplace=True)
+    return result_df
 
 def age_media_per_conglomerate(df):
     """
@@ -327,10 +330,9 @@ def age_media_per_conglomerate(df):
     df_last_quarter = df[(df["ANO4"]==max_year) & (df["TRIMESTRE"]==max_quarter)]
 
     # Agrupo el dataframe por aglomerado y le calculo el promedio de edad para cada uno
-    grouped_df = df_last_quarter.groupby("AGLOMERADO")["CH06"].agg(PROMEDIO="mean").reset_index()
+    grouped_df = df_last_quarter.groupby("AGLOMERADO").apply(lambda x: (x["CH06"] * x["PONDERA"]).sum() / x["PONDERA"].sum()).reset_index(name="PROMEDIO DE EDAD")
     
-    # Renombro la columna del promedio y para cada aglomerado pongo su nombre
-    grouped_df.rename(columns={"PROMEDIO": "PROMEDIO DE EDAD"}, inplace=True)
+    # Pongo para cada aglomerado su nombre
     grouped_df["AGLOMERADO"] = grouped_df["AGLOMERADO"].astype(str).map(dict_ag_id)
 
     return grouped_df
@@ -343,8 +345,8 @@ def calculate_dp(group):
     Returns:
         float: Valor de la dependencia demográfica para el trimestre.
     """
-    inactive = group[(group["CH06"]<=14) | (group["CAT_INAC"]==1)].shape[0]
-    active = group[group["CH06"].between(15, 64)].shape[0]
+    inactive = group[(group["CH06"]<=14) | (group["CAT_INAC"]==1)]["PONDERA"].sum()
+    active = group[group["CH06"].between(15, 64)]["PONDERA"].sum()
     return 100 * (inactive/active)
 
 def demography_dependency(df, conglomerate):
@@ -376,6 +378,6 @@ def distribution_per_age_and_gender(df):
     labels = [f"{i}-{i+9}" for i in range(0, 100, 10)]
     df["GRUPO EDAD"] = pd.cut(df["CH06"], bins=bins, labels=labels, right=False)
     sorted_df = df.sort_values(by=["CH04", "CH06"])
-    grouped_df = sorted_df.groupby(["GRUPO EDAD", "CH04"]).size().unstack(fill_value=0)
+    grouped_df = sorted_df.groupby(["GRUPO EDAD", "CH04"])["PONDERA"].sum().unstack(fill_value=0)
     grouped_df.columns = ["MASCULINO", "FEMENINO"]
     return grouped_df
