@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 from st_constantes import DATA_PATH
 
 def all_togetherH(path_salida):
@@ -62,29 +63,27 @@ def data_dates(route_file):
 
 def check_dataset():
     """Chequea que ambos 'usu_***_inicial.csv' tengan los mismos archivos según año y trimestre"""
-    home_init_file = DATA_PATH / "usu_hogar_inicial.csv"
-    indiv_init_file = DATA_PATH / "usu_individual_inicial.csv"
-    quarters_for_year_home = data_dates(home_init_file)
-    quarters_for_year_indiv = data_dates(indiv_init_file)
     missing_files = []
-    # se guardan los trimestres que faltan en el archivo de individuos
-    for year in quarters_for_year_home:
-        if year not in quarters_for_year_indiv.keys():
-            for quarter in quarters_for_year_home[year]:
-                missing_files.append((year, quarter, "individuos"))
-        elif quarters_for_year_home[year] != quarters_for_year_indiv[year]:
-            for quarter in quarters_for_year_home[year]:
-                if quarter not in quarters_for_year_indiv[year]:
-                    missing_files.append((year, quarter, "individuos"))
-    # se guardan los trimestres que faltan en el archivo de hogares
-    for year in quarters_for_year_indiv:
-        if year not in quarters_for_year_home.keys():
-            for quarter in quarters_for_year_indiv[year]:
-                missing_files.append((year, quarter, "hogares"))
-        elif quarters_for_year_indiv[year] != quarters_for_year_home[year]:
-            for quarter in quarters_for_year_indiv[year]:
-                if quarter not in quarters_for_year_home[year]:
-                    missing_files.append((year, quarter, "hogares"))
+    
+    for trimestre in DATA_PATH.iterdir():
+        if not trimestre.is_dir():
+            continue
+        # Buscar archivos de hogar e individual
+        hogar_files = list(trimestre.glob("usu_hogar_*"))
+        individual_files = list(trimestre.glob("usu_individual_*"))
+        
+        # Obtener año y trimestre del nombre del directorio
+        direct_name = trimestre.name
+        ano4 = direct_name[-8:-4]
+        trim = direct_name[8]
+            
+        # Verificar archivos faltantes
+        if not hogar_files:
+            missing_files.append((ano4, trim, "hogares"))
+            
+        if not individual_files:
+            missing_files.append((ano4, trim, "individuos"))
+            
     return missing_files
     
 
