@@ -73,16 +73,22 @@ def check_dataset():
         individual_files = list(trimestre.glob("usu_individual_*"))
         
         # Obtener año y trimestre del nombre del directorio
-        direct_name = trimestre.name
-        ano4 = direct_name[-8:-4]
-        trim = direct_name[8]
-            
+        if trimestre.name[:4] == "EPH_":
+            direct_name = trimestre.name
+            year_index = direct_name.find("20")
+            ano4 = direct_name[year_index:year_index + 4]
+            for c in direct_name:
+                if c.isdigit() and direct_name.index(c) != year_index:
+                    trim = int(c)
+                    break
+            if int(ano4) not in range(1900, 2100) or trim not in range(1, 5):
+                raise NameError("Hay inconsistencias en los nombres de los directorios")
         # Verificar archivos faltantes
-        if not hogar_files:
-            missing_files.append((ano4, trim, "hogares"))
+            if not hogar_files:
+                missing_files.append((ano4, trim, "hogares"))
             
-        if not individual_files:
-            missing_files.append((ano4, trim, "individuos"))
+            if not individual_files:
+                missing_files.append((ano4, trim, "individuos"))
             
     return missing_files
     
