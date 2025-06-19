@@ -371,3 +371,59 @@ def distribution_per_age_and_gender(df):
     grouped_df = sorted_df.groupby(["GRUPO EDAD", "CH04"])["PONDERA"].sum().unstack(fill_value=0)
     grouped_df.columns = ["MASCULINO", "FEMENINO"]
     return grouped_df
+
+#Funciones punto 6
+def load_individual_data_06():
+    """
+    Carga solo las columnas necesarias del archivo de datos individuales.
+    """
+    file_path = DATA_OUT_PATH / "usu_individual_final.csv"
+
+    if not file_path.exists():
+        raise FileNotFoundError("No se encontró el archivo procesado: usu_individual_final.csv")
+
+    columnas_utilizadas = [
+        "ANO4",
+        "NIVEL_ED",
+        "PONDERA",
+        "CH06", #Edad cumplida
+        "CH09", #Sabe leer y escribir
+        "CH12", # Nivel más alto que cursa o cursó
+        "CH13" # Finalizó dicho nivel
+    ]
+
+    df = pd.read_csv(
+        file_path,
+        encoding="latin-1",
+        sep=";",
+        usecols=columnas_utilizadas,
+        low_memory=False
+    )
+    return df
+
+#seleccionar rangos de edad
+
+def select_age_range(selected_ranges, df):
+    counts = df[int(df["CH13"]) == 1].value_counts()
+    return counts.idxmax()
+
+#Convertir ranking de la Parte 1 sección B punto 4 a csv
+def P1_B4_to_csv():
+    result = top5_university_occupancy(archivo_individual, archivo_hogar)
+
+    csv_buffer = StringIO()
+    writer = csv.writer(csv_buffer)
+    writer.writerows(result)
+    csv_data = csv_buffer.getvalue()
+
+    return csv_data
+
+#Calcular porcentaje de mayores a 6 años que saben leer y escribir
+def calculate_percentage(df):
+    df_filtered = df[df["CH06"] > 6]
+    df_filtered["lit_ponderado"] = df_filtered["CH09"] * df_filtered["PONDERA"]
+    grouped = df_filtered.groupby("ANO4").agg({"lit_ponderado": "sum","PONDERA": "sum"})
+    grouped["porcentaje"] = (grouped["lit_ponderado"] / grouped["PONDERA"]) * 100
+    grouped = grouped.reset_index()
+    
+    return grouped[["ANO4", "porcentaje"]]
