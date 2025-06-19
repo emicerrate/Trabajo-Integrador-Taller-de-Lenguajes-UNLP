@@ -41,6 +41,9 @@ def load_basket_data():
     return df
 
 def poverty_indigence_lines_per_quarter(df_basket, year, quarter):
+    """
+    Se calcula y retorna las lineas de pobreza e indigencia para el año y trimestre
+    """
     min_date = datetime(year, 3*quarter - 2, 1)
     max_date = datetime(year, 3*quarter, 30)
     df_basket["indice_tiempo"] = pd.to_datetime(df_basket["indice_tiempo"])
@@ -51,6 +54,9 @@ def poverty_indigence_lines_per_quarter(df_basket, year, quarter):
     
 
 def homes_under_poverty_indigence(homes, p_line, i_line):
+    """
+    Se calcula y retorna la cantidad de hogares con 4 integrantes debajo de la pobreza, la indigencia y el total
+    """
     homes_filtered = homes[homes["IX_TOT"]==4]
     homes_quantity = homes_filtered["PONDERA"].sum()
     under_poverty_quantity = homes_filtered.PONDERA[homes_filtered["ITF"]<p_line].sum()

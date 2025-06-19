@@ -43,8 +43,8 @@ except (FileNotFoundError, ValueError) as e:
 
 available_years = get_available_years(df)
 
+st.subheader("Personas desocupadas según estudios alcanzados")
 st.markdown("""
-### Personas desocupadas según estudios alcanzados
 Se informa el nivel educativo de los desocupados. 
 Elegir año y trimestre, se evalúa para todo el país.
 """)
@@ -96,8 +96,8 @@ dict_name_to_id = {v: k for k, v in dict_ag_id.items()}
 # Lista de aglomerados con nombres
 agglomerates = ["Todo el país"] + sorted(dict_name_to_id.keys())
 
+st.subheader("Evolución tasa de desempleo")
 st.markdown("""
-### Evolución tasa de desempleo
 Se informa la evolución del desempleo (tasa de desempleo) a lo largo del tiempo. 
 Elegir aglomerado o para todo el país.
 """)
@@ -145,8 +145,8 @@ else:
     
 # 1.5.3 EVOLUCIÓN DEL EMPLEO
 
+st.subheader("Evolución de la tasa de empleo")
 st.markdown("""
-### Evolución de la tasa de empleo
 Se informa la evolución del empleo (tasa de empleo) a lo largo del tiempo. 
 Elegir aglomerado o para todo el país.
 """)
@@ -193,8 +193,8 @@ else:
 
 # 1.5.4 DISTRIBUCION DEL EMPLEO
 
+st.subheader("Distribución del tipo de empleo por aglomerado")
 st.markdown("""
-### Distribución del tipo de empleo por aglomerado
 Se informa para cada aglomerado el total de personas ocupadas, el porcentaje con empleo estatal, el porcentaje con empleo privado y el porcentaje de otro tipo. 
 Elegir año y trimestre:
 """)
@@ -244,9 +244,8 @@ df_rates = get_employment_unemployment_by_agglomerate_extremes(df)
 #    height=600
 #)
 
+st.subheader("Mapa de la evolución de  la tasa de empleo y desempleo por aglomerado")
 st.markdown("""
-### Mapa de la evolución de  la tasa de empleo y desempleo por aglomerado
-
 Este mapa interactivo permite visualizar cómo evolucionaron las tasas de empleo o desempleo en cada aglomerado urbano del país entre el primer y el último período disponible en la base de datos.  
 Al seleccionar el tipo de tasa que desea analizar, el mapa marcará con **puntos verdes** los aglomerados donde la situación **mejoró con el tiempo** y con **puntos rojos** aquellos donde **empeoró**.
 
