@@ -21,8 +21,8 @@ st.write("""
 if st.button("Check dataset"):
     missing_files = check_dataset()
     if missing_files == []:
-        st.success("✅ Todos los archivos de hogares tienen su correspondiente de individuos. " \
-        "El sistema contiene información desde el {min_quarter:02}/{min_year} hasta el {max_quarter:02}/{max_year}.")
+        st.success("✅ Todos los archivos de hogares tienen su correspondiente de individuos. ")
+        st.info(f"El sistema contiene información desde el {min_quarter:02}/{min_year} hasta el {max_quarter:02}/{max_year}.")
     else:
         st.error("Existe uno o más archivos faltantes en el dataset:")
         for file in missing_files:
