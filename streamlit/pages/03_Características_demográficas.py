@@ -14,7 +14,16 @@ from package.data_graphics.individuos import (
 )
 from package.data_graphics.funcionesA import data_dates
 
-st.title("Características demográficas")
+st.title("🧑‍🤝‍🧑 Características demográficas")
+
+st.markdown("""
+            En esta sección se pueden explorar **aspectos demográficos** de la población argentina.
+            Podés conocer una gran variedad de cosas como:
+            - La distribución de la población por edad y sexo ♂️♀️
+            - La edad promedio por aglomerado 📅
+            - La dependencia demográfica por aglomerado 👶🏻👴🏼
+            - Media y mediana de la edad de la población 👩🏼👨🏻
+            """)
 
 # Cargamos el archivo usu_individual_final.csv
 try:
@@ -31,6 +40,9 @@ sorted_conglomerates = sorted(name_to_id_conglomerates)
 
 # 1.3.1 Distribución de la población por edad y sexo
 st.subheader("Distribución de la población por edad y sexo")
+st.markdown("""
+    Muestra la distribución de la población por edad (grupos de 10 años) y sexo para el año y trimestre seleccionados.
+""")
 year = st.text_input("Año:")
 quarter = st.slider("Trimestre:", value=1, min_value=1, max_value=4, step=1)
 if year:
@@ -84,11 +96,17 @@ if year:
 
 # 1.3.2 Edad promedio último trimestre
 st.subheader("Edad promedio de personas por aglomerado para el último trimestre")
+st.markdown("""
+    Muestra la edad promedio de las personas para cada aglomerado para el último trimestre cargado.
+""")
 df_age_media_per_conglomerate = age_media_per_conglomerate(df)
 st.dataframe(df_age_media_per_conglomerate.style.format({"PROMEDIO DE EDAD": "{:.1f}"}), hide_index=True)
 
 # 1.3.3 Evolución de la dependencia demográfica
 st.subheader("Evolución de la dependencia demográfica")
+st.markdown("""
+    Muestra la evolución a través del tiempo de la dependencia demográfica para un aglomerado seleccionado.
+""")
 
 conglomerate = st.selectbox("Aglomerado:", sorted_conglomerates, index=None, placeholder="Seleccione un aglomerado...")
 if conglomerate != None:
@@ -121,5 +139,8 @@ if conglomerate != None:
 
 # 1.3.4 Media y mediana de la edad
 st.subheader("Media y mediana de la edad para cada año y trimestre")
+st.markdown("""
+    Calcula para cada trimestre almacenado la media y la mediana de edad de la población.
+""")
 df_media_and_median_last_quarter = media_and_median_last_quarter(df)
 st.dataframe(df_media_and_median_last_quarter.style.format({"MEDIA": "{:.2f}", "MEDIANA": "{:,.0f}"}), hide_index=True, width=500)
