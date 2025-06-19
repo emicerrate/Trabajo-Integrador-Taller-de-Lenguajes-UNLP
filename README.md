@@ -5,14 +5,27 @@ Aplicación de visualización de datos de la EPH (Encuesta Permanente de Hogares
 - Python 3.12+  
 - Librerías: `streamlit`, `notebook`, `pandas`, `matplotlib`, `folium`, `streamli-folium`
 
-## Instalación  
+## Instalación
 ```bash
 git clone [https://gitlab.catedras.linti.unlp.edu.ar/python-2025/proyectos/grupo20/code.git]  
 
-# Navegar al directorio del proyecto para instalar y ejecutar streamlit
+# Navegar al directorio del proyecto para instalar las dependencias
 pip install -r requirements.txt  
-streamlit run streamlit/Inicio.py 
+streamlit run streamlit/Inicio.py
 
+```
+## Ejecución
+```bash
+# Paso 1:
+Descargar y descomprimir los archivos de la EPH dentro de la carpeta "files"
+# Paso 2:
+Una vez instaladas las dependencias, ejecutar los archivos "individual.ipynb" y "hogar.ipynb" que están en la carpeta "notebooks"
+Este paso se debe repetir en caso de que se agreguen o se quiten archivos de la carpeta "files"
+# Paso 3 (opcional):
+Ejecutar el archivo "total.ipynb" de la misma carpeta si se desea conocer diversos datos demográficos sobre Argentina
+# Paso 4:
+Ejecutar la aplicación Streamlit desde la terminal con:
+streamlit run streamlit/Inicio.py
 ```
 
 # Estructura del Proyecto
