@@ -52,13 +52,20 @@ def data_dates(route_file):
     """Devuelve un diccionario con los trimestre que contiene el dataset para cada año"""
     quarters_for_year = {}
     # Se lee el archivo inicial
-    with open(route_file, newline='', encoding="utf-8") as file:
-        reader = csv.DictReader(file, delimiter=";")
-        for row in reader:
-            # Se genera un set para filtrar los trimestres y que se registren de manera única, el año es la key del diccionario
-            if int(row["ANO4"]) not in quarters_for_year.keys():
-                quarters_for_year[int(row["ANO4"])] = set()
-            quarters_for_year[int(row["ANO4"])].add(int(row["TRIMESTRE"]))
+    for trimestre in route_file.iterdir():
+        if not trimestre.is_dir():
+            continue
+        # Obtener año y trimestre del nombre del directorio
+        if trimestre.name[:4] == "EPH_":
+            direct_name = trimestre.name
+            year_index = direct_name.find("20")
+            ano4 = int(direct_name[year_index:year_index + 4])
+            for c in direct_name:
+                if c.isdigit() and direct_name.index(c) != year_index:
+                    trim = int(c)
+                    break
+            quarters_for_year[ano4] = set()
+            quarters_for_year[ano4].add(trim)
     return quarters_for_year
 
 def check_dataset():
@@ -97,8 +104,7 @@ def range_dataset():
     """
         Se calcula y devuelve el año maximo y minimo, y a partir del trimestre se agrega como fecha el mes de inicio de ese trimestre
     """
-    home_init_file = DATA_PATH / "usu_hogar_inicial.csv"
-    quarters_for_year = data_dates(home_init_file)
+    quarters_for_year = data_dates(DATA_PATH)
     # Se calculan el min y el max
     min_year = min(quarters_for_year)
     max_year = max(quarters_for_year)
