@@ -286,16 +286,6 @@ def load_individual_data_02():
     if not file_path.exists():
         raise FileNotFoundError("No se encontró el archivo procesado: usu_individual_final.csv")
 
-    columnas_utilizadas = [
-        "ANO4",
-        "TRIMESTRE",
-        "CONDICION_LABORAL",
-        "NIVEL_ED_str",
-        "PONDERA",
-        "AGLOMERADO",
-        "PP04A"
-    ]
-
     df = pd.read_csv(file_path, encoding="latin-1", sep=";", low_memory=False)
     return df
 
