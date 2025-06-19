@@ -334,3 +334,31 @@ def age_media_per_conglomerate(df):
     grouped_df["AGLOMERADO"] = grouped_df["AGLOMERADO"].astype(str).map(dict_ag_id)
 
     return grouped_df
+
+def calculate_dp(group):
+    """
+    Calcula la dependencia demográfica para un trimestre.
+    Args:
+        group (dataframe): Dataframe con toda la información de personas para un trimestre y año específicos.
+    Returns:
+        float: Valor de la dependencia demográfica para el trimestre.
+    """
+    inactive = group[(group["CH06"]<=14) | (group["CH06"]>=65)].shape[0]
+    active = group[group["CH06"].between(15, 64)].shape[0]
+    return 100 * (inactive/active)
+
+def demography_dependency(df, conglomerate):
+    """
+    Calcula para un aglomerado dado la dependencia demográfica para cada trimestre cargado.
+    Args:
+        df (dataframe): Dataframe con la información de las personas.
+        conglomerate (str): Id del conglomerado al cual le calcularemos.
+    Returns:
+        grouped_df (dataframe): Dataframe con información de un aglomerado agrupado por año y trimestre y con 
+        la dependencia demográfica para cada trimestre.
+    """
+    df_conglomerate = df[df["AGLOMERADO"]==int(conglomerate)]
+    grouped_df = df_conglomerate.groupby(["ANO4","TRIMESTRE"]).apply(calculate_dp).reset_index(name="DEPENDENCIA DEMOGRÁFICA")
+    grouped_df["PERÍODO"] = grouped_df["ANO4"].astype(str) + "-T" + grouped_df["TRIMESTRE"].astype(str)
+    grouped_df.rename(columns={"ANO4": "AÑO"}, inplace=True)
+    return grouped_df
