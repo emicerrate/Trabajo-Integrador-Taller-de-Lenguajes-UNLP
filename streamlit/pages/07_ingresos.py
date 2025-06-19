@@ -64,7 +64,7 @@ if st.button("Calcular"):
     under_poverty_q, under_indigence_q, total = homes_under_poverty_indigence(df_homes_filtered, p_line, i_line)
     perc_poverty = round(under_poverty_q * 100 / total, 2)
     perc_indigence = round(under_indigence_q * 100 / total, 2)
-    rest = 100 - perc_poverty
+    rest = round(100 - perc_poverty, 2)
     percentages = [perc_indigence, perc_poverty, rest]
 
     # Se emprolija el DataFrame
