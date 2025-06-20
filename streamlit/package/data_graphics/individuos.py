@@ -384,7 +384,9 @@ def load_individual_data_06():
 
     columnas_utilizadas = [
         "ANO4",
+        "TRIMESTRE",
         "NIVEL_ED",
+        "NIVEL_ED_str",
         "PONDERA",
         "CH06", #Edad cumplida
         "CH09", #Sabe leer y escribir
@@ -401,28 +403,93 @@ def load_individual_data_06():
     )
     return df
 
+# Devuelve la cantidad ponderada por cada categoria de Nivel_ED_str
+def get_education_level_counts(df):
+    """
+    Devuelve un DataFrame con columnas 'Nivel Educativo' y 'Cantidad',
+    con la cantidad de personas ponderadas por nivel educativo.
+    """
+    # Mapeo de códigos numéricos a nombres descriptivos
+    ed_map = ed_levels_NIVEL_ED()
+    df = df[df["NIVEL_ED"].isin(ed_map.keys())].copy()
+    df["Nivel Educativo"] = df["NIVEL_ED"].map(ed_map)
+
+    result = (
+        df.groupby("Nivel Educativo")["PONDERA"]
+        .sum()
+        .reset_index()
+        .rename(columns={"PONDERA": "Cantidad"})
+        .sort_values(by="Cantidad", ascending=False)
+    )
+    return result
+
 #seleccionar rangos de edad
+def most_common_level(selected_ranges, age_ranges, df):
+    """
+    Devuelve un DataFrame con columnas 'Nivel Educativo', 'Cantidad' y 'Porcentaje',
+    agrupado por nivel educativo en el/los rango/s etario/s seleccionados.
+    """
+    if "NIVEL_ED_str" not in df.columns:
+        raise KeyError("La columna 'NIVEL_ED_str' no existe en el DataFrame.")
 
-def select_age_range(selected_ranges, df):
-    counts = df[int(df["CH13"]) == 1].value_counts()
-    return counts.idxmax()
+    # Construir una máscara para todos los rangos seleccionados
+    mask = pd.Series([False] * len(df))
+    for rango in selected_ranges:
+        min_age, max_age = age_ranges[rango]
+        mask |= (df["CH06"] >= min_age) & (df["CH06"] < max_age)
 
-#Convertir ranking de la Parte 1 sección B punto 4 a csv
+    # Aplicar el filtro
+    filtered_df = df[mask]
+
+    # Filtrar filas sin información
+    filtered_df = filtered_df[filtered_df["NIVEL_ED_str"] != "Sin informacion"]
+
+    # Agrupar y sumar ponderaciones
+    result = (
+        filtered_df.groupby("NIVEL_ED_str")["PONDERA"]
+        .sum()
+        .reset_index()
+        .rename(columns={"NIVEL_ED_str": "Nivel Educativo", "PONDERA": "Cantidad"})
+        .sort_values(by="Cantidad", ascending=False)
+    )
+
+    # Agregar columna de porcentaje
+    total = result["Cantidad"].sum()
+    result["Porcentaje"] = (result["Cantidad"] / total * 100).round(2)
+
+    return result
+
 def P1_B4_to_csv():
-    result = top5_university_occupancy(archivo_individual, archivo_hogar)
+    """
+    Genera un archivo CSV con el ranking de los 5 aglomerados
+    con mayor porcentaje de hogares con dos o más ocupantes con estudios universitarios
+    o superiores finalizados.
+    """
+    file_path_individual = DATA_OUT_PATH / "usu_individual_final.csv"
+    file_path_hogar = DATA_OUT_PATH / "usu_hogar_final.csv"
 
-    csv_buffer = StringIO()
-    writer = csv.writer(csv_buffer)
-    writer.writerows(result)
-    csv_data = csv_buffer.getvalue()
+    # Obtener resultados
+    result = top5_university_occupancy(file_path_individual, file_path_hogar)
 
-    return csv_data
+    # Crear DataFrame
+    df_result = pd.DataFrame(result, columns=["Aglomerado", "Porcentaje"])
 
-#Calcular porcentaje de mayores a 6 años que saben leer y escribir
+    # Convertir a CSV y codificar
+    return df_result.to_csv(index=False).encode('utf-8')
+
+
 def calculate_percentage(df):
-    df_filtered = df[df["CH06"] > 6]
-    df_filtered["lit_ponderado"] = df_filtered["CH09"] * df_filtered["PONDERA"]
-    grouped = df_filtered.groupby("ANO4").agg({"lit_ponderado": "sum","PONDERA": "sum"})
+    """
+    Calcula el porcentaje anual de personas mayores de 6 años capaces de leer y escribir,
+    """
+    df_filtered = df.loc[df["CH06"] > 6].copy()
+    
+    # Crear columna binaria para saber leer y escribir
+    df_filtered['lee_y_escribe'] = (df_filtered["CH09"] == 1).astype(int)
+    
+    df_filtered.loc[:, "lit_ponderado"] = df_filtered["lee_y_escribe"] * df_filtered["PONDERA"]
+    
+    grouped = df_filtered.groupby("ANO4").agg({"lit_ponderado": "sum", "PONDERA": "sum"})
     grouped["porcentaje"] = (grouped["lit_ponderado"] / grouped["PONDERA"]) * 100
     grouped = grouped.reset_index()
     
