@@ -106,7 +106,12 @@ if not df_educ.empty:
 else:
     st.info("No hay datos disponibles para el/los rango/s seleccionado/s.")
 
-st.subheader("Ranking de los 5 Aglomerados con Mayor Porcentaje de Hogares con Dos o Más Ocupantes con Estudios Universitarios o Superiores Finalizados")
+st.subheader("Aglomerados con Mayor Porcentaje Estudios Universitarios ")
+st.markdown("""
+En esta sección podese descargar en formato CSV el ranking de los cinco aglomerados con mayor proporción de hogares con dos o más ocupantes 
+que finalizaron estudios universitarios o superiores, 
+utilizando los dos archivos de microdatos más recientes.
+""")
 
 st.download_button(
     label="⬇️🗂️ Descargar CSV de ranking",

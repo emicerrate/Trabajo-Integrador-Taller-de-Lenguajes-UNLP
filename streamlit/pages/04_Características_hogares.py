@@ -16,15 +16,15 @@ from package.data_graphics.hogares import (
 st.title("🏠 Características Hogares")
 
 st.markdown("""
-En esta sección podés explorar distintos **aspectos habitacionales** de la población argentina a partir de los datos de la **Encuesta Permanente de Hogares (EPH)**. 
+En esta sección podés explorar distintos **aspectos habitacionales** de la población argentina a partir de los datos de la **Encuesta Permanente de Hogares (EPH)**.  
 A partir del **año seleccionado** (o incluyendo **todos los disponibles**), se dan a conocer:
 
-- cuántas **viviendas** fueron relevadas  
-- cómo se distribuyen según su **tipo**  
-- qué **materiales predominan** en los pisos  
-- si disponen de **baño interior**  
-- el **régimen de tenencia** a lo largo del tiempo  
-- y la proporción de viviendas ubicadas en **villas de emergencia**
+- 🧾 cuántas **viviendas** fueron relevadas  
+- 🏗️ cómo se distribuyen según su **tipo**  
+- 🧱 qué **materiales predominan** en los pisos  
+- 🚽 si disponen de **baño interior**  
+- 📊 el **régimen de tenencia** a lo largo del tiempo  
+- 🚧 la proporción de viviendas ubicadas en **villas de emergencia**
 """)
 # Cargar los datos de hogares con las columnas necesarias
 try:

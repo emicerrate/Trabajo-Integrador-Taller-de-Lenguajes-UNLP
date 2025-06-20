@@ -17,9 +17,9 @@ from package.data_graphics.individuos import (
 st.title("👨‍👩‍👧‍👦 Ingresos 💸")
 
 st.markdown("""
-Esta sección permite al usuario seleccionar un año y trimestre para analizar los ingresos de hogares de 4 integrantes. 
-A partir de los datos de ingresos totales (ITF) y los valores mensuales de la canasta básica familiar, 
-se calcula y muestra cuántos hogares están por debajo de la línea de pobreza e indigencia, tanto en cantidad como en porcentaje.
+En esta sección podés analizar los ingresos de hogares de 4 integrantes según 📅 año y trimestre, 
+compararlos con la 🧺 canasta básica y visualizar cuántos están bajo la línea de 💸 pobreza e 🆘 indigencia, 
+con gráficos claros y datos porcentuales.
 """)
 
 st.subheader("Hogares por debajo de la linea de pobreza e indigencia")
