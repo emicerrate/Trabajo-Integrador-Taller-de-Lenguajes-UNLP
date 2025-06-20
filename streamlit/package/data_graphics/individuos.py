@@ -1,6 +1,8 @@
 import pandas as pd
 import json
-from st_constantes import DATA_OUT_PATH, DATA_PATH
+from st_constantes import DATA_OUT_PATH, DATA_PATH, SRC_PATH
+from funcionesT import top5_university_occupancy
+
 
 def agglomeration_id():
     dict_ag_id = {
@@ -402,6 +404,20 @@ def load_individual_data_06():
         low_memory=False
     )
     return df
+
+def ed_levels_NIVEL_ED():
+    ed_levels = {
+        1 : "Jardín/preescolar",
+        2 : "Primario",
+        3 : "EGB",
+        4 : "Secundario",
+        5 : "Polimodal",
+        6 : "Terciario",
+        7 : "Universitario",
+        8 : "Posgrado universitario",
+        9 : "Educación especial"
+    }
+    return ed_levels
 
 # Devuelve la cantidad ponderada por cada categoria de Nivel_ED_str
 def get_education_level_counts(df):
