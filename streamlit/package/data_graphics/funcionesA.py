@@ -48,6 +48,22 @@ def all_togetherI(path_salida):
                     for row in reader:
                         writer.writerow(row)
 
+def get_year_quarter_and_file_type(route_file):
+    """Devuelve el año, el trimestre y si se trata de un archivo hogar o de individuos"""
+    columns_needed = ["ANO4", "TRIMESTRE"]
+    with route_file.open("r", newline=""):
+        df = pd.read_csv(route_file, encoding="UTF-8", sep=";", usecols=columns_needed, low_memory=False)
+    year = int(df["ANO4"].unique())
+    quarter = int(df["TRIMESTRE"].unique())
+    if "hogar" in route_file.name.lower():
+        file_type = "hogar"
+    elif "individual" in route_file.name.lower():
+        file_type = "individual"
+    else:
+        return None
+    return year, quarter, file_type
+        
+
 def data_dates(route_file):
     """Devuelve un diccionario con los trimestre que contiene el dataset para cada año"""
     quarters_for_year = {}
@@ -56,46 +72,31 @@ def data_dates(route_file):
         if not trimestre.is_dir():
             continue
         # Obtener año y trimestre del nombre del directorio
-        if trimestre.name[:4] == "EPH_":
-            direct_name = trimestre.name
-            year_index = direct_name.find("20")
-            ano4 = int(direct_name[year_index:year_index + 4])
-            for c in direct_name:
-                if c.isdigit() and direct_name.index(c) != year_index:
-                    trim = int(c)
-                    break
-            quarters_for_year[ano4] = set()
-            quarters_for_year[ano4].add(trim)
+        for file in trimestre.iterdir():
+            try:
+                year, quarter, type = get_year_quarter_and_file_type(file)
+            except:
+                continue
+            if year not in quarters_for_year.keys():
+                quarters_for_year[year] = {quarter: [type]}
+            elif quarter not in quarters_for_year[year].keys():
+                quarters_for_year[year][quarter] = [type]
+            else:
+                quarters_for_year[year][quarter].append(type)
     return quarters_for_year
 
 def check_dataset():
     """Chequea que ambos 'usu_***_inicial.csv' tengan los mismos archivos según año y trimestre"""
     missing_files = []
     
-    for trimestre in DATA_PATH.iterdir():
-        if not trimestre.is_dir():
-            continue
-        # Buscar archivos de hogar e individual
-        hogar_files = list(trimestre.glob("usu_hogar_*"))
-        individual_files = list(trimestre.glob("usu_individual_*"))
-        
-        # Obtener año y trimestre del nombre del directorio
-        if trimestre.name[:4] == "EPH_":
-            direct_name = trimestre.name
-            year_index = direct_name.find("20")
-            ano4 = direct_name[year_index:year_index + 4]
-            for c in direct_name:
-                if c.isdigit() and direct_name.index(c) != year_index:
-                    trim = int(c)
-                    break
-            if int(ano4) not in range(1900, 2100) or trim not in range(1, 5):
-                raise NameError("Hay inconsistencias en los nombres de los directorios")
-        # Verificar archivos faltantes
-            if not hogar_files:
-                missing_files.append((ano4, trim, "hogares"))
-            
-            if not individual_files:
-                missing_files.append((ano4, trim, "individuos"))
+    data_dates_dict = data_dates(DATA_PATH)
+    for year in data_dates_dict:
+        for quarter in data_dates_dict[year]:
+            if "hogar" not in data_dates_dict[year][quarter]:
+                missing_files.append((year, quarter, "hogares"))
+            if "individual" not in data_dates_dict[year][quarter]:
+                missing_files.append((year, quarter, "individuos"))
+    
             
     return missing_files
     
@@ -106,9 +107,9 @@ def range_dataset():
     """
     quarters_for_year = data_dates(DATA_PATH)
     # Se calculan el min y el max
-    min_year = min(quarters_for_year)
-    max_year = max(quarters_for_year)
-    return 3*(min(quarters_for_year[min_year]) - 1) + 1, min_year, 3 * max(quarters_for_year[max_year]), max_year
+    min_year = min(quarters_for_year.keys())
+    max_year = max(quarters_for_year.keys())
+    return 3*(min(quarters_for_year[min_year].keys()) - 1) + 1, min_year, 3 * max(quarters_for_year[max_year].keys()), max_year
 
 def init_file_reset():
     """
@@ -119,4 +120,5 @@ def init_file_reset():
     individual_init_file = DATA_PATH / "usu_individual_inicial.csv"
     all_togetherH(home_init_file)
     all_togetherI(individual_init_file)
+    
     
