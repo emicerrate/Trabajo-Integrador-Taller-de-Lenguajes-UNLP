@@ -3,9 +3,7 @@ from datetime import datetime
 from st_constantes import DATA_OUT_PATH, DATA_PATH
 
 def load_hogar_data_07():
-    """
-    Carga el archivo de datos individuales y verifica columnas necesarias.
-    """
+    """Carga el archivo de datos de hogares toma solo las columnas necesarias."""
     file_path = DATA_OUT_PATH / "usu_hogar_final.csv"
 
     if not file_path.exists():
@@ -21,7 +19,7 @@ def load_hogar_data_07():
 
     df = pd.read_csv(
         file_path, 
-        encoding="latin-1", 
+        encoding="UTF-8", 
         sep=";",
         usecols=columns_needed,
         low_memory=False)
@@ -29,35 +27,31 @@ def load_hogar_data_07():
     return df
 
 def load_basket_data():
-    """
-    Carga el archivo de datos individuales y verifica columnas necesarias.
-    """
+    """Carga el archivo de canasta básica"""
+    
     file_path = DATA_PATH / "valores-canasta-basica-alimentos-canasta-basica-total-mensual-2016.csv"
 
     if not file_path.exists():
         raise FileNotFoundError("No se encontró el archivo de canasta básica de alimentos")
 
-    df = pd.read_csv(file_path, encoding="latin-1", sep=",")
+    df = pd.read_csv(file_path, encoding="UTF-8", sep=",")
     return df
 
 def poverty_indigence_lines_per_quarter(df_basket, year, quarter):
-    """
-    Se calcula y retorna las lineas de pobreza e indigencia para el año y trimestre
-    """
+    """Se calcula y retorna las lineas de pobreza e indigencia para el año y trimestre"""
     min_date = datetime(year, 3*quarter - 2, 1)
     max_date = datetime(year, 3*quarter, 30)
     df_basket["indice_tiempo"] = pd.to_datetime(df_basket["indice_tiempo"])
+    # Se toman solo los datos de los meses correspondientes al trismestre ingresado por parámetro
     df_basket_filtered = df_basket[(df_basket.indice_tiempo>=min_date) & (df_basket.indice_tiempo<max_date)]
-    average_poverty_line = df_basket_filtered["linea_pobreza"].mean()
-    average_indigence_line = df_basket_filtered["linea_indigencia"].mean()
+    average_poverty_line = df_basket_filtered["linea_pobreza"].mean() # Promedio de la linea de pobreza en dichos meses
+    average_indigence_line = df_basket_filtered["linea_indigencia"].mean() # Promedio de la linea de indigencia en dichos meses
     return average_poverty_line, average_indigence_line
     
 
 def homes_under_poverty_indigence(homes, p_line, i_line):
-    """
-    Se calcula y retorna la cantidad de hogares con 4 integrantes debajo de la pobreza, la indigencia y el total
-    """
-    homes_filtered = homes[homes["IX_TOT"]==4]
+    """Se calcula y retorna la cantidad de hogares con 4 integrantes debajo de la pobreza, la indigencia y el total"""
+    homes_filtered = homes[homes["IX_TOT"]==4]    # Se toman solo los hogares con 4 integrantes
     homes_quantity = homes_filtered["PONDERA"].sum()
     under_poverty_quantity = homes_filtered.PONDERA[homes_filtered["ITF"]<p_line].sum()
     under_indigence_quantity = homes_filtered.PONDERA[homes_filtered["ITF"]<i_line].sum()

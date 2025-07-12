@@ -65,13 +65,15 @@ def get_year_quarter_and_file_type(route_file):
         
 
 def data_dates(route_file):
-    """Devuelve un diccionario con los trimestre que contiene el dataset para cada año"""
+    """Devuelve un diccionario con los trimestres que contiene el dataset para cada año,
+    y los tipos de archivos existentes para el trimestre de ese año"""
     quarters_for_year = {}
-    # Se lee el archivo inicial
     for trimestre in route_file.iterdir():
+        # Si no es una carpeta, pasa al siguiente archivo
         if not trimestre.is_dir():
             continue
-        # Obtener año y trimestre del nombre del directorio
+        # Para cada archivo dentro de la subcarpeta obtiene año, trimestre y tipo de archivo
+        # y lo almacena en el diccionario
         for file in trimestre.iterdir():
             try:
                 year, quarter, type = get_year_quarter_and_file_type(file)
@@ -86,7 +88,8 @@ def data_dates(route_file):
     return quarters_for_year
 
 def check_dataset():
-    """Chequea que ambos 'usu_***_inicial.csv' tengan los mismos archivos según año y trimestre"""
+    """Chequea desde la estructura que retorna 'data_dates' que cada archivo encontrado (de hogar o de individuos) 
+    tenga su archivo complementario restante"""
     missing_files = []
     
     data_dates_dict = data_dates(DATA_PATH)

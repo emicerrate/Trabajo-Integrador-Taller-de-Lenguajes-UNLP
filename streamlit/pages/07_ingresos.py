@@ -79,26 +79,26 @@ if st.button("Calcular"):
     fig, ax = plt.subplots(figsize=(8,6))
     plt.title("Canasta básica", color="#FFFFFF")
     plt.ylabel("Porcentaje", labelpad=10, color="#FFFFFF")
-    ax.bar(data['condicion'], data['porcentajes'], width=0.4, color=["#B71C1C"], edgecolor=["#FFFFFF"])  # Ajusta `width` para cambiar el ancho de las barras
+    ax.bar(data['condicion'], data['porcentajes'], width=0.4, color=["#B71C1C"], edgecolor=["#FFFFFF"])  # Ajusta 'width' para cambiar el ancho de las barras
     ax.tick_params(axis='x', colors='#FFFFFF')
     ax.tick_params(axis='y', colors='#FFFFFF')
     ax.spines['top'].set_visible(False)      # Quitar marco superior
     ax.spines['right'].set_visible(True)
-    ax.spines['left'].set_color("#FFFFFF")      # Quitar marco superior
+    ax.spines['left'].set_color("#FFFFFF")
     ax.spines['bottom'].set_color("#FFFFFF")
-    ax.set_ylim(0, 100)
+    ax.set_ylim(0, 100)        # Se establece el rango de los porcentajes en (0-100) para que los datos se muestren de una manera mas intuitiva
     fig.patch.set_facecolor('#1D2B44')
     ax.set_facecolor('#1D2B44')
     
-    ax2 = ax.twinx()
+    ax2 = ax.twinx()        # Se agrega un segundo eje vertical para visibilizar las cantidades
     ax2.spines['right'].set_color('#FFFFFF')
     ax2.spines['top'].set_visible(False)
     ax2.spines['left'].set_visible(False)
     ax2.spines['bottom'].set_visible(False)
     ax2.set_ylabel("Cantidad", color='#FFFFFF', labelpad=30)  # Título
-    ax2.tick_params(axis='y', colors='#FFFFFF')  # Color de las graduaciones
+    ax2.tick_params(axis='y', colors='#FFFFFF')    # Color de las graduaciones
     ax2.set_ylim(0, total)
-    ax2.ticklabel_format(axis='y', style='plain')
+    ax2.ticklabel_format(axis='y', style='plain')    # Se ajusta style en 'plain' para evitar que las cantidades figuren con notación científica
     
     texts = ["Cantidad de hogares " + data["condicion"][0].lower() +" : " + str(under_indigence_q) + " (" + str(percentages[0])+ "%).",
              "Cantidad de hogares " + data["condicion"][1].lower() +" : " + str(under_poverty_q) + " (" + str(percentages[1])+ "%).",
