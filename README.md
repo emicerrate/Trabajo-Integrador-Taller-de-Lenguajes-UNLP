@@ -82,3 +82,6 @@ code/
 - FRANCO PAOLO URRICELQUI
 - JOAQUIN ARIEL CEQUEIRA
 - JOAQUIN PEREA
+
+## Nota
+Este proyecto fue desarrollado originalmente en un entorno privado de GitLab como parte de la currícula universitaria. Ha sido migrado a este repositorio público para demostración de portfolio. El historial de commits refleja el trabajo colaborativo original del equipo
